@@ -15,7 +15,7 @@ vector <cv::Mat> readImages(cv::String folder, int flag);
 
 int main(int argc, const char** argv)
 {
-	cv::String folder = "C:/Users/marcos/Desktop/Investigacion/canon2048x1536";
+	cv::String folder = argv[2];
 	vector <cv::Mat> gray = readImages(folder, cv::IMREAD_GRAYSCALE);
 	vector <cv::Mat> img = readImages(folder, cv::IMREAD_COLOR);
 
