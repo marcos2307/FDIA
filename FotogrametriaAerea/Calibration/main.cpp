@@ -98,7 +98,7 @@ vector <cv::Mat> readImages(cv::String folder, int flag)
 
 		if (!src.data)
 		{
-			cerr << "Problem loading image!!!" << endl;
+			cerr << "no image, my friend!!!" << endl;
 		}
 		else 
 		{
