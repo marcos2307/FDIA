@@ -2,14 +2,15 @@
 //
 
 #include "stdafx.h"
-#include "miHeader.h"
 
 void matchTwoViews(Mat img1, Mat img2);
 
-int main()
+int main(int argc, const char** argv)
 {
+	String folder = argv[1];
 	vector < Mat> img, gray;
-	loadImages(img, gray, "C:/Users/marcos/Desktop/Investigacion/imagenes/threeimages/canon-citec/2/");
+	img = readImages(folder, IMREAD_COLOR);
+	gray = readImages(folder, IMREAD_GRAYSCALE);
 
 	cout << "Detecting and computing keypoints using BRISK.." << endl;
 	//matchThreeViews(img[0], img[1], img[2]);
@@ -29,7 +30,7 @@ void matchTwoViews(Mat img1, Mat img2)
 	vector < vector< KeyPoint > > kp(2, vector< KeyPoint >(POINTSQUANTITY));
 	vector < vector< DMatch > >  matches(1, vector< DMatch >(POINTSQUANTITY));
 
-	Ptr<BRISK> brisk = BRISK::create(40, 3, 1.0F);
+	Ptr< BRISK > brisk = BRISK::create(40, 3, 1.0F);
 	brisk->detectAndCompute(img2, noArray(), kp[0], descriptor[0], false);
 	brisk->detectAndCompute(img1, noArray(), kp[1], descriptor[1], false);
 
@@ -77,7 +78,7 @@ void matchTwoViews(Mat img1, Mat img2)
 		}
 		distAnt = it->distance;
 	}
-	graficarMatches(img1, img2, pts1, pts2);
+	//graficarMatches(img1, img2, pts1, pts2);
 	Mat F;
 	F = findFundamentalMat(pts1, pts2, CV_FM_RANSAC, 3.0, 0.99, noArray());
 	cout << F << endl;
@@ -87,7 +88,7 @@ void matchTwoViews(Mat img1, Mat img2)
 	vector< Vec3f > lines1, lines2;
 	computeCorrespondEpilines(pts1, 1, F, lines2);
 	computeCorrespondEpilines(pts2, 2, F, lines1);
-	graficarEpipolares(img1, img2, pts1, pts2, lines1, lines2, &im1ep, &im2ep);
+	//graficarEpipolares(img1, img2, pts1, pts2, lines1, lines2, &im1ep, &im2ep);
 
 
 	FileStorage f("C:/Users/marcos/Desktop/Investigacion/canon2048x1536/cam.xml", cv::FileStorage::READ, cv::String());
