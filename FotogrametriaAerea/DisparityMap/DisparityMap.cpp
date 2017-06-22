@@ -79,7 +79,7 @@ void matchTwoViews(Mat img1, Mat img2, String camFolder)
 		}
 		distAnt = it->distance;
 	}
-	//graficarMatches(img1, img2, pts1, pts2);
+	graficarMatches(img1, img2, pts1, pts2);
 	Mat F;
 	F = findFundamentalMat(pts1, pts2, CV_FM_RANSAC, 3.0, 0.99, noArray());
 	cout << F << endl;
@@ -89,7 +89,7 @@ void matchTwoViews(Mat img1, Mat img2, String camFolder)
 	vector< Vec3f > lines1, lines2;
 	computeCorrespondEpilines(pts1, 1, F, lines2);
 	computeCorrespondEpilines(pts2, 2, F, lines1);
-	//graficarEpipolares(img1, img2, pts1, pts2, lines1, lines2, &im1ep, &im2ep);
+	graficarEpipolares(img1, img2, pts1, pts2, lines1, lines2, &im1ep, &im2ep);
 
 
 	FileStorage f(camFolder, cv::FileStorage::READ, cv::String());
@@ -126,10 +126,6 @@ void matchTwoViews(Mat img1, Mat img2, String camFolder)
 		line(imag1, Point(0, i), Point(imag1.cols - 1, i), Scalar(0, 0, 255), 3);
 		line(imag2, Point(0, i), Point(imag1.cols - 1, i), Scalar(0, 0, 255), 3);
 	}
-	/*for (int i = 10; i < imag1.cols; i = i + 30)
-	{
-	line(imag1, Point(i, 0), Point(i, imag1.rows - 1), Scalar(0, 0, 255), 3);
-	}*/
 
 	Mat out(imag1.rows, 2 * imag1.cols, CV_8UC3);
 	Rect rect1 = Rect(0, 0, imag1.cols, imag1.rows);
