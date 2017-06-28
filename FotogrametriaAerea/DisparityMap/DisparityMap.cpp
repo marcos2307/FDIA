@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 
-void matchTwoViews(Mat img1, Mat img2, String camFolder);
+void matchTwoViews(vector <Mat> images, vector <Mat> grayImages, String camFolder);
 
 int main(int argc, const char** argv)
 {
@@ -15,7 +15,7 @@ int main(int argc, const char** argv)
 
 	cout << "Detecting and computing keypoints using BRISK.." << endl;
 
-	matchTwoViews(img[1], img[0], camFolder);
+	matchTwoViews(img, gray, camFolder);
 
 
 	system("pause");
@@ -24,66 +24,47 @@ int main(int argc, const char** argv)
 }
 
 
-void matchTwoViews(Mat img1, Mat img2, String camFolder)
+void matchTwoViews(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 {
+	Mat img1 = images[0];
+	Mat img2 = images[1];
 	Size imgSize = Size(img1.cols, img1.rows);
-	vector < Mat> descriptor(2);
+	vector < Mat> descriptor;
 	vector < vector< KeyPoint > > kp(2, vector< KeyPoint >(POINTSQUANTITY));
-	vector < vector< DMatch > >  matches(1, vector< DMatch >(POINTSQUANTITY));
+	vector < vector< DMatch > >  matches;
 
-	Ptr< BRISK > brisk = BRISK::create(40, 3, 1.0F);
-	brisk->detectAndCompute(img2, noArray(), kp[0], descriptor[0], false);
-	brisk->detectAndCompute(img1, noArray(), kp[1], descriptor[1], false);
+	Ptr< BRISK > brisk = BRISK::create(40, 0, 1.0F);
+	brisk->detect(grayImages, kp);
+	brisk->compute(grayImages, kp, descriptor);
 
 	cout << "Creating Matcher BruteForce-Hamming.." << endl;
-	Ptr< DescriptorMatcher > matcher = DescriptorMatcher::create("BruteForce-Hamming");
+	BFMatcher matcher(NORM_HAMMING);
 	cout << "Matching and sorting matches.." << endl;
-
-	matcher->match(descriptor[1], descriptor[0], matches[0], noArray());
-	sort(matches[0].begin(), matches[0].end(), comp);
-
+	
+	matcher.knnMatch(descriptor[0], descriptor[1], matches, 2);
 
 	cout << "Taking good matches.." << endl;
 	vector< DMatch > good1;
 	vector< Point2f > pts1, pts2;
 	vector< Vec3b > color1, color2;
-	double distAnt = INF;
-	double Tprom = 0.0000;
-	double delta1 = 3;
-	double Nprom = 0.0;
-	double delta2 = 15;
-	int i = 0;
-	for (vector< DMatch >::iterator it = matches[0].begin(); it != matches[0].end(); ++it)
+	int i;
+	for (i = 0; i < matches.size(); ++i)
 	{
-		double Dx = kp[0][it->trainIdx].pt.x - kp[1][it->queryIdx].pt.x;
-		double Dy = kp[0][it->trainIdx].pt.y - kp[1][it->queryIdx].pt.y;
-		double t = atan2l(Dy, Dx);
-		double N2 = sqrt(Dx*Dx + Dy*Dy);
-
-		double D1 = Tprom - t;
-		double D2 = Nprom - N2;
-
-		Tprom = (Tprom*(i)+t) / (i + 1);
-		Nprom = (Nprom*(i)+N2) / (i + 1);
-		//El promedio debe ser solo de los puntos correctos
-
-		if (D1< 0) D1 = -D1;
-		if (D2< 0) D2 = -D2;
-		if (D1<(delta1* PI / 180) && D2<(delta2*Nprom / 100))
+		if (matches[i][0].distance < 0.6*matches[i][1].distance)
 		{
-			good1.push_back(*it);
-			pts2.push_back(kp[0][it->trainIdx].pt);
-			color2.push_back(img2.at< Vec3b >(kp[0][it->trainIdx].pt));
-			pts1.push_back(kp[1][it->queryIdx].pt); //bf.match(query, train)
-			color1.push_back(img1.at< Vec3b >(kp[1][it->queryIdx].pt));
+			good1.push_back(matches[i][0]);
+			pts2.push_back(kp.at(1)[matches[i][0].trainIdx].pt);
+			color2.push_back(img2.at< Vec3b >(kp.at(1)[matches[i][0].trainIdx].pt));
+			pts1.push_back(kp.at(0)[matches[i][0].queryIdx].pt); //bf.match(query, train)
+			color1.push_back(img1.at< Vec3b >(kp.at(0)[matches[i][0].queryIdx].pt));
 		}
-		distAnt = it->distance;
 	}
-	graficarMatches(img1, img2, pts1, pts2);
+	cout << endl << good1.size() << endl;
+	graficarMatches(img1, img2, pts1, pts2, ALL_IN_ONE);
 	Mat F;
-	F = findFundamentalMat(pts1, pts2, CV_FM_RANSAC, 3.0, 0.99, noArray());
+	vector <uchar> inliers;
+	F = findFundamentalMat(pts1, pts2, CV_FM_RANSAC, 3.0, 0.99, inliers);
 	cout << F << endl;
-	//F = mi8Points(pts1, pts2);
 	Mat im1ep, im2ep;
 
 	vector< Vec3f > lines1, lines2;

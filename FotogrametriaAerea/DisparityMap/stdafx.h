@@ -40,11 +40,15 @@ using namespace cv;
 #define MINMATCHES 7        // minimo numero de matches para hallar F
 #define PI 3.1415926535897932384626433832795
 
+//enums
+enum Graficar {ALL_IN_ONE, ONE_BY_ONE};
 
-//declaraciones de funciones
+//declaraciones 1de funciones
 vector <cv::Mat> readImages(cv::String folder, int flag);
 
 
 bool comp(DMatch& A, DMatch& B);
-void graficarMatches(Mat img1, Mat img2, vector<Point2f> pts1, vector<Point2f> pts2);
+
+void graficarMatches(Mat img1, Mat img2, vector<Point2f> pts1, vector<Point2f> pts2, int flag = ALL_IN_ONE);
+
 void graficarEpipolares(Mat img1, Mat img2, vector<Point2f> pts1, vector<Point2f> pts2, vector<Vec3f> lines1, vector<Vec3f> lines2, Mat* imout1, Mat* imout2);

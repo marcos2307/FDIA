@@ -51,30 +51,44 @@ void graficarEpipolares(Mat img1, Mat img2, vector<Point2f> pts1, vector<Point2f
 			color2,
 			THICKNESS);
 		circle(outImg(rect2), pts2[i], POINT_SIZE, color2, -1, CV_AA);
-		namedWindow("IMG", CV_WINDOW_NORMAL);
-		imshow("IMG", outImg);
+		
 		*imout1 = outImg(rect1).clone();
 		*imout2 = outImg(rect2).clone();
-		waitKey(0);
 	}
+	namedWindow("IMG", CV_WINDOW_NORMAL);
+	imshow("IMG", outImg);
+	waitKey(0);
 }
 
-
-void graficarMatches(Mat img1, Mat img2, vector<Point2f> pts1, vector<Point2f> pts2)
+void graficarMatches(Mat img1, Mat img2, vector<Point2f> pts1, vector<Point2f> pts2, int flag)
 {
 	cv::Mat outImg(img1.rows, img1.cols * 2, CV_8UC3);
 	Rect rect1(0, 0, img1.cols, img1.rows);
 	Rect rect2(img1.cols, 0, img1.cols, img1.rows);
+	img1.copyTo(outImg(rect1));
+	img2.copyTo(outImg(rect2));
 	for (size_t i = 0; i < pts1.size(); i++)
 	{
-		img1.copyTo(outImg(rect1));
-		img2.copyTo(outImg(rect2));
+		if (flag == ONE_BY_ONE)
+		{
+			img1.copyTo(outImg(rect1));
+			img2.copyTo(outImg(rect2));
+		}
 
 		Scalar color(rand() % 256, rand() % 256, rand() % 256);
 		circle(outImg(rect1), pts1[i], POINT_SIZE, color, -1, CV_AA);
 		circle(outImg(rect2), pts2[i], POINT_SIZE, color, -1, CV_AA);
 		Point2f p2 = Point2f(pts2[i].x + img1.cols, pts2[i].y);
 		line(outImg, pts1[i], p2, color, 5);
+		if (flag == ONE_BY_ONE)
+		{
+			namedWindow("IMG", CV_WINDOW_NORMAL);
+			imshow("IMG", outImg);
+			waitKey(0);
+		}
+	}
+	if (flag == ALL_IN_ONE)
+	{
 		namedWindow("IMG", CV_WINDOW_NORMAL);
 		imshow("IMG", outImg);
 		waitKey(0);
