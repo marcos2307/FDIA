@@ -1,5 +1,8 @@
 #include "functions.h"
 
+using namespace std;
+using namespace cv;
+
 void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder);
 int main(int argc, const char** argv)
 {
