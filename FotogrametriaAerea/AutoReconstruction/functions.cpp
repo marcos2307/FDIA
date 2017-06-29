@@ -1,9 +1,5 @@
 #include"functions.h"
 
-
-using namespace std;
-using namespace cv;
-
 vector <cv::Mat> readImages(cv::String folder, int flag)
 {
 	vector<cv::String> filenames;
