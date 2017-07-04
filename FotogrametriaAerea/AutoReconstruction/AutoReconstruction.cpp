@@ -57,35 +57,17 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 		}
 	}
 	cout << endl << good1.size() << endl;
-	graficarMatches(img1, img2, pts1, pts2, ALL_IN_ONE);
+
 	Mat F;
 	vector <uchar> inliers;
 	F = findFundamentalMat(pts1, pts2, CV_FM_RANSAC, 4.0, 0.99, inliers);
 	cout << F << endl;
-	Mat im1ep, im2ep;
-
-	vector< Vec3f > lines1, lines2;
-	computeCorrespondEpilines(pts1, 1, F, lines2);
-	computeCorrespondEpilines(pts2, 2, F, lines1);
-	graficarEpipolares(img1, img2, pts1, pts2, lines1, lines2, &im1ep, &im2ep);
-
 
 	FileStorage f(camFolder, cv::FileStorage::READ, cv::String());
 	Mat K, dist;
 	f["K"] >> K;
 	f["dist"] >> dist;
 	cout << "K dist:" << endl << K << dist << endl;
-	Mat img1u, img2u;
-	undistort(img1, img1u, K, dist);
-	undistort(img2, img2u, K, dist);
-
-	namedWindow("1Undistorted", CV_WINDOW_KEEPRATIO);
-	imshow("1Undistorted", img1u);
-	waitKey(0);
-	namedWindow("2Undistorted", CV_WINDOW_KEEPRATIO);
-	imshow("2Undistorted", img2u);
-	waitKey(0);
-
 
 	Mat R, t;
 	recoverPose(F, pts1, pts2, K, R, t, noArray());
