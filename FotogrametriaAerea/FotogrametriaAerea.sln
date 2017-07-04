@@ -15,8 +15,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoReconstruction", "AutoReconstruction\AutoReconstruction.vcxproj", "{5BAA2FFB-9A20-43E6-808D-BBB00F23F811}"
 >>>>>>> 3b6a4d9bcdc1d64230bfea8139d5a725b8dbaf94
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GenerateCameraMat", "GenerateCameraMat\GenerateCameraMat.vcxproj", "{415A5A43-9A3D-436B-B15A-04073EF49BB2}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -68,6 +66,7 @@ Global
 		{5BAA2FFB-9A20-43E6-808D-BBB00F23F811}.Release|x86.ActiveCfg = Release|Win32
 		{5BAA2FFB-9A20-43E6-808D-BBB00F23F811}.Release|x86.Build.0 = Release|Win32
 <<<<<<< HEAD
+<<<<<<< HEAD
 		{415A5A43-9A3D-436B-B15A-04073EF49BB2}.Debug|x64.ActiveCfg = Debug|x64
 		{415A5A43-9A3D-436B-B15A-04073EF49BB2}.Debug|x64.Build.0 = Debug|x64
 		{415A5A43-9A3D-436B-B15A-04073EF49BB2}.Debug|x86.ActiveCfg = Debug|Win32
@@ -79,6 +78,8 @@ Global
 =======
 >>>>>>> 3b6a4d9bcdc1d64230bfea8139d5a725b8dbaf94
 >>>>>>> refs/remotes/origin/master
+=======
+>>>>>>> parent of 4c9ade1... proyecto para crear cam.xml a partir de valores conocidos de la matriz intrinseca K
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
