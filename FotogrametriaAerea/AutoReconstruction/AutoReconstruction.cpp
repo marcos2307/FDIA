@@ -30,7 +30,7 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 	vector < vector< KeyPoint > > kp(2, vector< KeyPoint >(POINTSQUANTITY));
 	vector < vector< DMatch > >  matches;
 
-	Ptr< BRISK > brisk = BRISK::create(40, 0, 1.0F);
+	Ptr< BRISK > brisk = BRISK::create(30, 3, 1.0F);
 	brisk->detect(grayImages, kp);
 	brisk->compute(grayImages, kp, descriptor);
 
@@ -43,7 +43,6 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 	cout << "Taking good matches.." << endl;
 	vector< DMatch > good1;
 	vector< Point2f > pts1, pts2;
-	vector< Vec3b > color1, color2;
 	int i;
 	for (i = 0; i < matches.size(); ++i)
 	{
@@ -51,17 +50,17 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 		{
 			good1.push_back(matches[i][0]);
 			pts2.push_back(kp.at(1)[matches[i][0].trainIdx].pt);
-			color2.push_back(img2.at< Vec3b >(kp.at(1)[matches[i][0].trainIdx].pt));
 			pts1.push_back(kp.at(0)[matches[i][0].queryIdx].pt); //bf.match(query, train)
-			color1.push_back(img1.at< Vec3b >(kp.at(0)[matches[i][0].queryIdx].pt));
 		}
 	}
 	cout << endl << good1.size() << endl;
 
 	Mat F;
-	vector <uchar> inliers;
-	F = findFundamentalMat(pts1, pts2, CV_FM_RANSAC, 4.0, 0.99, inliers);
-	cout << F << endl;
+	vector <uchar> inlier;
+	vector< Point2f > pts1i, pts2i;
+	vector< Vec3b > color1, color2;
+	//F = findFundamentalMat(pts1, pts2, CV_FM_RANSAC, 4.0, 0.99, inlier);
+
 
 	FileStorage f(camFolder, cv::FileStorage::READ, cv::String());
 	Mat K, dist;
@@ -69,8 +68,24 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 	f["dist"] >> dist;
 	cout << "K dist:" << endl << K << dist << endl;
 
+	Mat E;
+	E = findEssentialMat(pts1, pts2, K, CV_RANSAC, 0.99, 4.0, inlier);
+	
+	cout << E << endl;
+
+	for (int i = 0; i < inlier.size(); i++)
+	{
+		if (inlier.at(i) != 0)
+		{
+			pts2i.push_back(pts2[i]);
+			color2.push_back(img2.at< Vec3b >(kp.at(1)[good1[i].trainIdx].pt));
+			pts1i.push_back(pts1[i]); //bf.match(query, train)
+			color1.push_back(img1.at< Vec3b >(kp.at(0)[good1[i].queryIdx].pt));
+		}
+	}
+
 	Mat R, t;
-	recoverPose(F, pts1, pts2, K, R, t, noArray());
+	recoverPose(E, pts1i, pts2i, K, R, t);
 	cout << "R t:" << endl << R << t << endl;
 	Mat P1, P2;
 	P1 = Mat::eye(Size(4, 3), CV_64FC1);
@@ -81,7 +96,7 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 	Mat pts4D;
 
 	cout << "Triangulating.." << endl;
-	triangulatePoints(P1, P2, pts1, pts2, pts4D);
+	triangulatePoints(P1, P2, pts1i, pts2i, pts4D);
 	//cout << pts4D << endl;
 	pts4D = pts4D.t();
 	Mat pts3D;
