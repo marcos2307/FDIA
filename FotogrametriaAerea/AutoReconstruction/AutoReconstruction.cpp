@@ -3,26 +3,26 @@
 using namespace std;
 using namespace cv;
 
-void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder);
+void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, String infoFile);
 int main(int argc, const char** argv)
 {
 	String imagesFolder = argv[1];
-	String camFolder = argv[2];
+	String camFile = argv[2];
+	String infoFile = argv[3];
 	vector < Mat> img, gray;
 	img = readImages(imagesFolder, IMREAD_COLOR);
 	gray = readImages(imagesFolder, IMREAD_GRAYSCALE);
 
-	cout << "Detecting and computing keypoints using BRISK.." << endl;
-
-	reconstruct(img, gray, camFolder);
+	reconstruct(img, gray, camFile, infoFile);
 
 
 	system("pause");
 
 	return 0;
 }
-void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
+void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, String infoFile)
 {
+	cout << "Detecting and computing keypoints using BRISK.." << endl;
 	Mat img1 = images[0];
 	Mat img2 = images[1];
 	Size imgSize = Size(img1.cols, img1.rows);
@@ -59,19 +59,20 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 	vector <uchar> inlier;
 	vector< Point2f > pts1i, pts2i;
 	vector< Vec3b > color1, color2;
-	//F = findFundamentalMat(pts1, pts2, CV_FM_RANSAC, 4.0, 0.99, inlier);
 
 
-	FileStorage f(camFolder, cv::FileStorage::READ, cv::String());
+	FileStorage f(camFile, cv::FileStorage::READ, cv::String());
 	Mat K, dist;
 	f["K"] >> K;
 	f["dist"] >> dist;
 	cout << "K dist:" << endl << K << dist << endl;
 
+	vector < ImageInfo > imInfo = getImageInfo(infoFile);
+	cout << "info de: " << imInfo[0].name << endl;
 	Mat E;
 	E = findEssentialMat(pts1, pts2, K, CV_RANSAC, 0.99, 4.0, inlier);
-	
-	cout << E << endl;
+	//F = findFundamentalMat(pts1, pts2, CV_FM_RANSAC, 4.0, 0.99, inlier);
+	cout << "E:" << E << endl;
 
 	for (int i = 0; i < inlier.size(); i++)
 	{
@@ -90,19 +91,17 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 	Mat P1, P2;
 	P1 = Mat::eye(Size(4, 3), CV_64FC1);
 	hconcat(R, t, P2);
-	cout << "P1 P2:" << endl << P1 << endl << P2 << endl;
 	Mat R1, R2, Q;
-	stereoRectify(K, dist, K, dist, images[0].size(), R, t, R1, R2, P1, P2, Q);
+	//stereoRectify(K, dist, K, dist, images[0].size(), R, t, R1, R2, P1, P2, Q);
 	Mat pts4D;
-
+	cout << "P1 P2:" << endl << P1 << endl << P2 << endl;
 	cout << "Triangulating.." << endl;
-	triangulatePoints(P1, P2, pts1i, pts2i, pts4D);
+	triangulatePoints(K*P1, K*P2, pts1i, pts2i, pts4D);
 	//cout << pts4D << endl;
 	pts4D = pts4D.t();
 	Mat pts3D;
 	convertPointsFromHomogeneous(pts4D, pts3D);
 
-	cout << pts3D << endl;
 	cout << "Creating PLY file.." << endl;
 	generatePLY("nube", pts3D, color1);
 
