@@ -144,7 +144,7 @@
   <ItemGroup>
     <ClInclude Include="conversions.h" />
     <ClInclude Include="drawing.h" />
-    <ClInclude Include="operations.h" />
+    <ClInclude Include="matchingUtils.h" />
     <ClInclude Include="utilities.h" />
     <ClInclude Include="visualization.h" />
   </ItemGroup>
@@ -152,7 +152,7 @@
     <ClCompile Include="conversions.cpp" />
     <ClCompile Include="drawing.cpp" />
     <ClCompile Include="Matching.cpp" />
-    <ClCompile Include="operations.cpp" />
+    <ClCompile Include="matchingUtils.cpp" />
     <ClCompile Include="utilities.cpp" />
     <ClCompile Include="visualization.cpp" />
   </ItemGroup>

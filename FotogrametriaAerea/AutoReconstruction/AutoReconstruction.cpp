@@ -91,4 +91,5 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 	cout << "Creating PLY file.." << endl;
 	generatePLY("nube", pts3D, color1);
 
+	//prueba
 }

@@ -7,7 +7,7 @@
 #include "conversions.h"
 #include "drawing.h"
 #include "visualization.h"
-#include "operations.h"
+#include "matchingUtils.h"
 
 using namespace std;
 using namespace cv;
@@ -52,29 +52,15 @@ int main()
 	//Matching with Brute Force Matcher
 	BFMatcher matcher(NORM_HAMMING);
 	vector<vector<DMatch>> matches;
+
 	cout << "\nMatching keypoints...\n";
 	matcher.knnMatch(descriptors.at(0), descriptors.at(1), matches, 2);
 	cout << "Matches found: " << matches.size();
 
-	for (int i = 0; i < matches.size(); ++i)
-	{
-		cout << matches[i][0].distance << "\t" << matches[i][1].distance << "\n";
-	}
+	vector<DMatch> matches1, matches2;
+	matchStoring(matches, matches1, matches2);
 
-
-	vector<DMatch> goodMatches;
-	for (int i = 0; i < matches.size(); ++i)
-	{
-		const float ratio = 0.6f; // As in Lowe's paper; can be tuned
-		if (matches[i][0].distance < ratio * matches[i][1].distance)
-		{
-			goodMatches.push_back(matches[i][0]);
-		}
-	}
-
-	//Sorting matches
-	cout << "\n\nSorting matches...\n";
-	sort(goodMatches.begin(), goodMatches.end(), comp);
+	vector<DMatch> goodMatches = loweCriteria(matches1, matches2, 0.8);
 
 	cout << "Matching finished\n";
 	cout << "\n" << goodMatches.size() << " matches found \n\n";

@@ -13,10 +13,3 @@ void color2Gray(std::vector<cv::Mat>& colorImages, std::vector<cv::Mat>& grayIma
 		grayImages.push_back(imggray);
 	}
 }
-
-cv::Point2f toPoint2f(cv::KeyPoint kp)
-{
-	cv::Point2f result;
-	result = kp.pt;
-	return result;
-}

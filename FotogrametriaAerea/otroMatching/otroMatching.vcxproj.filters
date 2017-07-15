@@ -21,13 +21,13 @@
     <ClInclude Include="drawing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="operations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="visualization.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="matchingUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,9 +38,6 @@
     <ClCompile Include="drawing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="operations.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Matching.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="matchingUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
