@@ -137,3 +137,20 @@ void generatePLY(String name, Mat pts3D, vector< Vec3b > color)
 
 	f.close();
 }
+
+cv::Mat ypr2rm(double alpha, double betha, double gamma)
+{
+	Mat R = Mat(3, 3, CV_64F, 0.0);
+
+	R.at<double>(0, 0) = cos(alpha)*cos(betha);
+	R.at<double>(0, 1) = cos(alpha)*sin(betha)*sin(gamma) - sin(alpha)*cos(gamma);
+	R.at<double>(0, 2) = cos(alpha)*sin(betha)*cos(gamma) + sin(alpha)*sin(gamma);
+	R.at<double>(1, 0) = sin(alpha)*cos(betha);
+	R.at<double>(1, 1) = sin(alpha)*sin(betha)*sin(gamma) + cos(alpha)*cos(gamma);
+	R.at<double>(1, 2) = sin(alpha)*sin(betha)*cos(gamma) - cos(alpha)*sin(gamma);
+	R.at<double>(2, 0) = sin(betha)*(-1);
+	R.at<double>(1, 1) = cos(betha)*sin(gamma);
+	R.at<double>(1, 2) = cos(betha)*cos(gamma);
+
+	return R;
+}
