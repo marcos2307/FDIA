@@ -15,14 +15,3 @@ using namespace std;
 #include <opencv2\imgproc\imgproc.hpp>
 
 using namespace cv;
-
-struct ImageInfo //usada en getImageInfo
-{
-	string name;
-	double latitude;
-	double longitude;
-	double height;
-	double yaw;
-	double pitch;
-	double roll;
-};
