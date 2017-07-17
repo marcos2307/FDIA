@@ -15,3 +15,5 @@ void generatePLY(cv::String name, cv::Mat pts3D, std::vector< cv::Vec3b > color)
 vector < string > split(string line, char separator = ' ');
 
 vector <ImageInfo> getImageInfo(String txt_file);
+
+cv::Mat ypr2rm(ImageInfo Im);

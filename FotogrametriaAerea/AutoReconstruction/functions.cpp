@@ -175,6 +175,27 @@ vector <ImageInfo> getImageInfo(String txt_file)
 	return Iminfo;
 }
 
+cv::Mat ypr2rm(ImageInfo Im)
+{
+	double alpha = Im.yaw;
+	double betha = Im.pitch;
+	double gamma = Im.roll;
+
+	Mat R = Mat(0, 0, CV_64F, 0.0);
+
+	R.at<double>(0, 0) = cos(alpha)*cos(betha);
+	R.at<double>(0, 1) = cos(alpha)*sin(betha)*sin(gamma) - sin(alpha)*cos(gamma);
+	R.at<double>(0, 2) = cos(alpha)*sin(betha)*cos(gamma) + sin(alpha)*sin(gamma);
+	R.at<double>(1, 0) = sin(alpha)*cos(betha);
+	R.at<double>(1, 1) = sin(alpha)*sin(betha)*sin(gamma) + cos(alpha)*cos(gamma);
+	R.at<double>(1, 2) = sin(alpha)*sin(betha)*cos(gamma) - cos(alpha)*sin(gamma);
+	R.at<double>(2, 0) = (-1)*sin(betha);
+	R.at<double>(2, 1) = cos(betha)*sin(gamma);
+	R.at<double>(2, 2) = cos(betha)*cos(gamma);
+
+	return R;
+}
+
 vector < string > split(string line, char separator)
 {
 	vector < string > word(1);
