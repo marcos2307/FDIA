@@ -7,16 +7,18 @@ vector <cv::Mat> readImages(cv::String folder, int flag)
 	vector<cv::Mat> images;
 	for (size_t i = 0; i < filenames.size(); ++i)
 	{
+		int cont = 0;
 		cv::Mat src = imread(filenames[i], flag);
 
 		if (!src.data)
 		{
-			cerr << "no image, my friend!!!" << endl;
+			++cont;
 		}
 		else
 		{
 			images.push_back(src);
 		}
+		cout << filenames.size() - cont <<" Image files and " << cont << " No image files detected in the curret folder (" << folder << ")" << endl;
 	}
 	return images;
 }
