@@ -9,7 +9,7 @@ int main(int argc, const char** argv)
 	String imagesFolder = argv[1];
 	String camFile = argv[2];
 	String infoFile = argv[3];
-	vector < Mat> img, gray;
+	vector < Mat> img, gray;  
 	img = readImages(imagesFolder, IMREAD_COLOR);
 	gray = readImages(imagesFolder, IMREAD_GRAYSCALE);
 
