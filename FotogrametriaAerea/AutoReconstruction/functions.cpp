@@ -1,22 +1,22 @@
 #include"functions.h"
 
-vector <cv::Mat> readImages(cv::String folder, int flag)
+vector <cv::Mat> readImages(vector<cv::String> filenames, int flag)
 {
-	vector<cv::String> filenames;
-	glob(folder, filenames);
 	vector<cv::Mat> images;
 	for (size_t i = 0; i < filenames.size(); ++i)
 	{
+		int cont = 0;
 		cv::Mat src = imread(filenames[i], flag);
 
 		if (!src.data)
 		{
-			cerr << "no image, my friend!!!" << endl;
+			++cont;
 		}
 		else
 		{
 			images.push_back(src);
 		}
+		cout << filenames.size() - cont <<" Image files and " << cont << " No image files detected in the curret folder" << endl;
 	}
 	return images;
 }
@@ -114,9 +114,9 @@ void generatePLY(String name, Mat pts3D, vector< Vec3b > color)
 	f << "ply" << endl;
 	f << "format ascii 1.0" << endl;
 	f << "element vertex " << pts3D.rows << endl;
-	f << "property float x" << endl;
-	f << "property float y" << endl;
-	f << "property float z" << endl;
+	f << "property double x" << endl;
+	f << "property double y" << endl;
+	f << "property double z" << endl;
 	f << "property uchar blue" << endl;
 	f << "property uchar green" << endl;
 	f << "property uchar red" << endl;
@@ -131,8 +131,67 @@ void generatePLY(String name, Mat pts3D, vector< Vec3b > color)
 		else
 		{
 			f << 0 << " " << 0 << " " << 0 << " " << (int)color[i][0] << " " << (int)color[i][1] << " " << (int)color[i][2] << endl;
-
 		}
+	}
+
+	f.close();
+}
+
+void generatePLYcameras(String name, vector < Camera > camera, Mat pts3D, vector< Vec3b > color)
+{
+	
+	ofstream f;
+	f.open(name + ".ply");
+	f << "ply" << endl;
+	f << "format ascii 1.0" << endl;
+	f << "element vertex " << 5 * camera.size() + pts3D.rows << endl;
+	f << "property double x" << endl;
+	f << "property double y" << endl;
+	f << "property double z" << endl;
+	f << "property uchar blue" << endl;
+	f << "property uchar green" << endl;
+	f << "property uchar red" << endl;
+	f << "element edge " << 8 * camera.size() << endl;
+	f << "property int vertex1" << endl;
+	f << "property int vertex2" << endl;
+	f << "property uchar blue" << endl;
+	f << "property uchar green" << endl;
+	f << "property uchar red" << endl;
+	f << "end_header" << endl;
+
+
+	for (int i = 0; i < camera.size(); ++i)
+	{
+		vector < Point3d > point = camera[i].getPoints();
+		for ( int j = 0; j < point.size(); j++)
+		{
+			f << point[j].x << " " << point[j].y << " " << point[j].z << " " << 255 << " " << 0 << " " << 0 << endl;
+		}
+	}
+	
+	for (int i = 0; i < pts3D.rows; ++i)
+	{
+		const float* Mi = pts3D.ptr<float>(i);
+		if (Mi[0] * Mi[0] + Mi[1] * Mi[1] + Mi[2] * Mi[2] < 2000)
+		{
+			f << Mi[0] << " " << Mi[1] << " " << Mi[2] << " " << (int)color[i][0] << " " << (int)color[i][1] << " " << (int)color[i][2] << endl;
+		}
+		else
+		{
+			f << 0 << " " << 0 << " " << 0 << " " << (int)color[i][0] << " " << (int)color[i][1] << " " << (int)color[i][2] << endl;
+		}
+	}
+
+	for (int i = 0; i < camera.size(); ++i)
+	{
+		f << 5 * i << " " << 5 * i + 1 << " " << 255 << " " << 0 << " " << 0 << endl;
+		f << 5 * i << " " << 5 * i + 2 << " " << 255 << " " << 0 << " " << 0 << endl;
+		f << 5 * i << " " << 5 * i + 3 << " " << 255 << " " << 0 << " " << 0 << endl;
+		f << 5 * i << " " << 5 * i + 4 << " " << 255 << " " << 0 << " " << 0 << endl;
+		f << 5 * i + 1 << " " << 5 * i + 2 << " " << 255 << " " << 0 << " " << 0 << endl;
+		f << 5 * i + 2 << " " << 5 * i + 3 << " " << 255 << " " << 0 << " " << 0 << endl;
+		f << 5 * i + 3 << " " << 5 * i + 4 << " " << 255 << " " << 0 << " " << 0 << endl;
+		f << 5 * i + 4 << " " << 5 * i + 1 << " " << 255 << " " << 0 << " " << 0 << endl;
 	}
 
 	f.close();
@@ -181,7 +240,7 @@ cv::Mat ypr2rm(ImageInfo Im)
 	double betha = Im.pitch;
 	double gamma = Im.roll;
 
-	Mat R = Mat(0, 0, CV_64F, 0.0);
+	Mat R = Mat(3, 3, CV_64FC1);
 
 	R.at<double>(0, 0) = cos(alpha)*cos(betha);
 	R.at<double>(0, 1) = cos(alpha)*sin(betha)*sin(gamma) - sin(alpha)*cos(gamma);
