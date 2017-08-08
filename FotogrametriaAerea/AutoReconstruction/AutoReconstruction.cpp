@@ -3,7 +3,7 @@
 using namespace std;
 using namespace cv;
 
-void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, ImageInfo info);
+void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, vector <ImageInfo> info);
 int main(int argc, const char** argv)
 {
 	String imagesFolder = argv[1];
@@ -16,17 +16,20 @@ int main(int argc, const char** argv)
 	gray = readImages(filenames, IMREAD_GRAYSCALE);
 
 	vector < ImageInfo > imInfo = getImageInfo(infoFile);
-	ImageInfo info;
-	for (int i = 0; i < imInfo.size(); ++i)
+	vector < ImageInfo > info;
+	for (int i = 0; i < filenames.size(); ++i)
 	{
-		vector<String>::iterator it = std::find(filenames.begin(), filenames.end(), imInfo[i].name);
-		if (it != filenames.end())
+		vector<string> l = split(filenames[i], '\\');
+		for (int j = 0; j < imInfo.size(); ++j)
 		{
-			info = imInfo[i];
-			break;
+			//cout << "fileName, Info.name: " << l[l.size() - 1] << ", " << imInfo[j].name << endl;
+			if (l[l.size() - 1] == imInfo[j].name)
+			{
+				info.push_back(imInfo[j]);
+				//cout << "i, j: " << i << ", " << j << endl;
+			}
 		}
 	}
-
 	reconstruct(img, gray, camFile, info);
 
 
@@ -34,8 +37,9 @@ int main(int argc, const char** argv)
 
 	return 0;
 }
-void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, ImageInfo info)
+void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, vector < ImageInfo > info)
 {
+	cout << info[0].name << endl;
 	cout << "Detecting and computing keypoints using BRISK.." << endl;
 	Mat img1 = images[0];
 	Mat img2 = images[1];
@@ -97,18 +101,36 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, I
 		}
 	}
 
+
+	Mat P1, P2;
+	Mat R1 = Mat::eye(Size(3,3), CV_64FC1);
+	R1 = ypr2rm(info[0]);
+	cout << "R1 de ypr2rm: " << R1 << endl;
+	//rota la camara 90 grados alrededor de x ( para que el eje de la camara este en direccion de z negativa)
+	Mat Rz = -Mat::eye(3, 3, CV_64FC1);
+	Rz.at<double>(0, 0) = 1;
+	R1 = R1*Rz;
+	Mat t1 = Mat::zeros(3, 1, CV_64FC1);
+	t1.at<double>(0, 2) = info[0].height;
+	hconcat(R1, t1, P1);
+	Camera C1;
+	cout << "t1: " << t1 << endl << "P1: " << P1 << endl;
+	C1.rotoTrans(R1, t1);
+	
 	Mat R, t;
 	recoverPose(E, pts1i, pts2i, K, R, t);
-	cout << "R t:" << endl << R << t << endl;
-	Mat P1, P2;
-	Mat R1 = Mat(Size(3,3), CV_64FC1);
-	R1 = ypr2rm(info);
-	cout << R1 << " " << endl;
-	hconcat(R1, Mat::zeros(3,1,CV_64FC1), P1);
-	Camera C1;
-	C1.rotoTrans(R1, Mat::zeros(Size(1, 3), CV_64FC1));
-	Camera C2(C1.getR(), C1.getT());
-	C2.rotoTrans(R, t);
+	cout << "R*R1 t de la matriz Esencial:" << endl << R*R1 << t << endl;
+	cout << "R del GPS" << ypr2rm(info[1]) << ", " << endl;
+	double S = info[0].distanceInMeters(info[1]);
+	cout << "lat1, lon1: " << info[0].latitude << ", " << info[0].longitude << endl;
+	cout << "lat2, lon2: " << info[1].latitude << ", " << info[1].longitude << endl;
+	cout << "distancia en metros entre camaras(escala): " << S << endl;
+	Mat I1 = C1.getR().clone();
+	Mat I2 = C1.getT().clone();
+	Camera C2(I1, I2);
+	cout << " posicion de C2: " << C2.getT()<< " y R: " << C2.getR() << endl;
+	cout << "t: " << t << endl << "S*t: " << S*t << endl;
+	C2.rotoTrans(R, S*t);
 	cout << "C1: (R t)" << endl << C1.getR() << endl << C1.getT() << endl;
 	cout << "C2: (R t)" << endl << C2.getR() << endl << C2.getT() << endl;
 	vector<Camera> cam;
@@ -116,7 +138,7 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, I
 	cam.push_back(C2);
 	cout << "camara1con rototranslacion:" << Mat(C1.getPoints()) << endl;
 	cout << P1 << endl;
-	hconcat(R1*R, t, P2);
+	hconcat(C2.getR(), C2.getT(), P2);
 	//Mat R1, R2, Q;
 	//stereoRectify(K, dist, K, dist, images[0].size(), R, t, R1, R2, P1, P2, Q);
 	Mat pts4D;
@@ -129,7 +151,7 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, I
 	convertPointsFromHomogeneous(pts4D, pts3D);
 
 	cout << "Creating PLY file.." << endl;
-	generatePLYcameras("cameras", cam,pts3D, color1);
+	generatePLYcameras("camerasConEscala", cam,pts3D, color1);
 
 	//prueba
 }

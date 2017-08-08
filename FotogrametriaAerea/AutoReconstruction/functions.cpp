@@ -165,21 +165,18 @@ void generatePLYcameras(String name, vector < Camera > camera, Mat pts3D, vector
 		vector < Point3d > point = camera[i].getPoints();
 		for ( int j = 0; j < point.size(); j++)
 		{
-			f << point[j].x << " " << point[j].y << " " << point[j].z << " " << 255 << " " << 0 << " " << 0 << endl;
+			if (i == 0)
+			{
+				f << point[j].x << " " << point[j].y << " " << point[j].z << " " << 255 << " " << 255 << " " << 255 << endl;
+			}
+			else f << point[j].x << " " << point[j].y << " " << point[j].z << " " << 255 << " " << 0 << " " << 0 << endl;
 		}
 	}
 	
 	for (int i = 0; i < pts3D.rows; ++i)
 	{
 		const float* Mi = pts3D.ptr<float>(i);
-		if (Mi[0] * Mi[0] + Mi[1] * Mi[1] + Mi[2] * Mi[2] < 2000)
-		{
-			f << Mi[0] << " " << Mi[1] << " " << Mi[2] << " " << (int)color[i][0] << " " << (int)color[i][1] << " " << (int)color[i][2] << endl;
-		}
-		else
-		{
-			f << 0 << " " << 0 << " " << 0 << " " << (int)color[i][0] << " " << (int)color[i][1] << " " << (int)color[i][2] << endl;
-		}
+		f << Mi[0] << " " << Mi[1] << " " << Mi[2] << " " << (int)color[i][0] << " " << (int)color[i][1] << " " << (int)color[i][2] << endl;
 	}
 
 	for (int i = 0; i < camera.size(); ++i)
@@ -236,9 +233,9 @@ vector <ImageInfo> getImageInfo(String txt_file)
 
 cv::Mat ypr2rm(ImageInfo Im)
 {
-	double alpha = Im.yaw;
-	double betha = Im.pitch;
-	double gamma = Im.roll;
+	double alpha = Im.yaw * DEG_TO_RAD;
+	double betha = Im.pitch * DEG_TO_RAD;
+	double gamma = Im.roll * DEG_TO_RAD;
 
 	Mat R = Mat(3, 3, CV_64FC1);
 
@@ -261,10 +258,11 @@ vector < string > split(string line, char separator)
 	int pos = 0;
 	for (size_t i = 0; i < line.size(); i++)
 	{
-		if (line[i] == ' ')
+		if (line[i] == separator)
 		{
 			word.resize(word.size() + 1);
 			++pos;
+			++i;
 		}
 		word[pos] += line[i];
 	}
