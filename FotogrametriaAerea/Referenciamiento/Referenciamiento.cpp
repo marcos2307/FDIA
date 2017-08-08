@@ -4,7 +4,10 @@
 #include <vector>
 using namespace std;
 
-struct ImageInfo 
+static const double DEG_TO_RAD = 0.017453292519943295769236907684886;
+static const double EARTH_RADIUS_IN_METERS = 6372797.560856;
+
+class ImageInfo 
 {
 	string name;
 	double latitude;
@@ -13,7 +16,41 @@ struct ImageInfo
 	double yaw;
 	double pitch;
 	double roll;
+public:
+	ImageInfo(string name,
+		double latitude,
+		double longitude,
+		double height,
+		double yaw,
+		double pitch,
+		double roll) {
+		this->name += name;
+		this->latitude = latitude;
+		this->longitude = longitude;
+		this->height = height;
+		this->yaw = yaw;
+		this->pitch = pitch;
+		this->roll = roll;
+		
+	}
+	double ArcInRadians(ImageInfo to) {
+		double latitudeArc = (latitude - to.latitude) * DEG_TO_RAD;
+		double longitudeArc = (longitude - to.longitude) * DEG_TO_RAD;
+		double latitudeH = sin(latitudeArc * 0.5);
+		latitudeH *= latitudeH;
+		double lontitudeH = sin(longitudeArc * 0.5);
+		lontitudeH *= lontitudeH;
+		double tmp = cos(latitude*DEG_TO_RAD) * cos(to.latitude*DEG_TO_RAD);
+		return 2.0 * asin(sqrt(latitudeH + tmp*lontitudeH));
+
+	}
+	double DistanceInMeters(ImageInfo to) {
+		return EARTH_RADIUS_IN_METERS*ArcInRadians(to);
+	}
+
 };
+
+
 
 vector < string > split(string line, char separator = ' ');
 int main(int argc, char** argv)
@@ -35,22 +72,22 @@ int main(int argc, char** argv)
 			word = split(line);
 			cout << line << endl;
 
-			ImageInfo Im;
-			Im.name += word[0];
-			Im.latitude = stod(word[1]);
-			Im.longitude = stod(word[2]);
-			Im.height = stod(word[3]);
-			Im.yaw = stod(word[4]);
-			Im.pitch = stod(word[5]);
-			Im.roll = stod(word[6]);
+			ImageInfo Im(word[0], stod(word[1]), stod(word[2]), stod(word[3]), stod(word[4]), stod(word[5]), stod(word[6]));
 			Iminfo.push_back(Im);
 			word.clear();
 
 		}
+
 		info.close();
 	}
 
-	else cout << "Unable to open file";
+	else cout << "Unable to open file" << endl;
+
+	for (int i = 1; i < Iminfo.size(); ++i)
+	{
+		cout << Iminfo[i-1].DistanceInMeters(Iminfo[i]) << endl;
+	}
+	
 
 	system("pause");
 	return 0;
@@ -71,3 +108,7 @@ vector < string > split(string line, char separator)
 	}
 	return word;
 }
+
+
+
+
