@@ -110,5 +110,6 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFolder)
 		//cout << pts3D << endl;
 		cout << "Creating PLY file.." << endl;
 		generatePLY("nube" + to_string(i), pts3D, color1);
+
 	}
 }

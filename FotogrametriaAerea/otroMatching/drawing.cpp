@@ -4,7 +4,7 @@
 #include <opencv2\imgproc\imgproc.hpp>
 #include "drawing.h"
 
-void customDrawMatches(cv::Mat& inputImage1, std::vector<cv::KeyPoint>& keyPoints1, cv::Mat& inputImage2, std::vector<cv::KeyPoint>& keyPoints2, std::vector<cv::DMatch>& matches, int radius, int thickness, cv::String winName, int option)
+void customDrawMatches(cv::Mat& inputImage1, std::vector<cv::KeyPoint>& keyPoints1, cv::Mat& inputImage2, std::vector<cv::KeyPoint>& keyPoints2, std::vector<cv::DMatch>& matches, cv::String winName, int radius, int thickness, int option)
 {
 	cv::Mat auxiliar1, auxiliar2, auxiliar3;
 
@@ -45,7 +45,7 @@ void customDrawMatches(cv::Mat& inputImage1, std::vector<cv::KeyPoint>& keyPoint
 	}
 }
 
-void customDrawMatches(cv::Mat& inputImage1, std::vector<cv::Point2f>& kPoints1, cv::Mat& inputImage2, std::vector<cv::Point2f>& kPoints2, int radius, int thickness, cv::String winName, int option)
+void customDrawMatches(cv::Mat& inputImage1, std::vector<cv::Point2f>& kPoints1, cv::Mat& inputImage2, std::vector<cv::Point2f>& kPoints2, cv::String winName, int radius, int thickness, int option)
 {
 	cv::Mat auxiliar1, auxiliar2, auxiliar3;
 

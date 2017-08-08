@@ -17,7 +17,6 @@ int main(int argc, const char** argv)
 
 	matchTwoViews(img, gray, camFolder);
 
-
 	system("pause");
 
 	return 0;
@@ -89,7 +88,6 @@ void matchTwoViews(vector <Mat> images, vector <Mat> grayImages, String camFolde
 	imshow("2Undistorted", img2u);
 	waitKey(0);
 
-
 	Mat R, t;
 	recoverPose(F, pts1, pts2, K, R, t, noArray());
 	cout << "R t:" << endl << R << t << endl;
@@ -118,7 +116,6 @@ void matchTwoViews(vector <Mat> images, vector <Mat> grayImages, String camFolde
 	namedWindow("rect", CV_WINDOW_KEEPRATIO);
 	imshow("rect", out);
 	waitKey(0);
-
 
 	cvtColor(imag1, imag1, COLOR_BGR2GRAY);
 	cvtColor(imag2, imag2, COLOR_BGR2GRAY);

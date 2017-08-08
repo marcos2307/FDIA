@@ -4,24 +4,26 @@
 #include <opencv2\imgproc\imgproc.hpp>
 #include "matchingUtils.h"
 
-void matchStoring(std::vector<std::vector<cv::DMatch>> &matches, std::vector<cv::DMatch> &matches1, std::vector<cv::DMatch> &matches2)
-{
-	for (int i = 0; i < matches.size(); i++)
-	{
-		matches1.push_back(matches[i][0]);
-		matches2.push_back(matches[i][1]);
-	}
-}
 
-std::vector<cv::DMatch> loweCriteria(std::vector<cv::DMatch> &inputMatch1, std::vector<cv::DMatch> &inputMatch2, const float ratio)
+
+std::vector<cv::DMatch> loweCriteria(std::vector<std::vector<cv::DMatch>> matches, const float ratio)
 {
 	std::vector<cv::DMatch> goodMatches;
-	for (int i = 0; i < inputMatch1.size(); i++)
+	for (int i = 0; i < matches.size(); i++)
 	{
-		if (inputMatch1[i].distance < ratio*inputMatch2[i].distance)
+		if (matches[i][0].distance < ratio*matches[i][1].distance)
 		{
-			goodMatches.push_back(inputMatch1[i]);
+			goodMatches.push_back(matches[i][0]);
 		}
 	}
 	return goodMatches;
+}
+
+void retrieveKeyPoints(std::vector<cv::DMatch> matches, std::vector<cv::KeyPoint> keyPoints1, std::vector<cv::KeyPoint> keyPoints2, std::vector<cv::Point2f>& srcPoints, std::vector<cv::Point2f>& dstPoints)
+{
+	for (int i = 0; i < matches.size(); i++)
+	{
+		srcPoints.push_back(keyPoints1[matches[i].queryIdx].pt);
+		dstPoints.push_back(keyPoints2[matches[i].trainIdx].pt);
+	}
 }

@@ -129,7 +129,7 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, I
 	convertPointsFromHomogeneous(pts4D, pts3D);
 
 	cout << "Creating PLY file.." << endl;
-	generatePLYcameras("cameras", cam,pts3D, color1);
+	generatePLYcameras("cameras", cam, pts3D, color1);
 
 	//prueba
 }

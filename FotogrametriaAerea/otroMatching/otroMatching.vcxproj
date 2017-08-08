@@ -24,6 +24,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>otroMatching</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <ProjectName>Reconstruction</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -142,19 +143,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="conversions.h" />
     <ClInclude Include="drawing.h" />
     <ClInclude Include="matchingUtils.h" />
+    <ClInclude Include="reconstructionUtils.h" />
     <ClInclude Include="utilities.h" />
-    <ClInclude Include="visualization.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="conversions.cpp" />
     <ClCompile Include="drawing.cpp" />
-    <ClCompile Include="Matching.cpp" />
+    <ClCompile Include="Reconstruction.cpp" />
     <ClCompile Include="matchingUtils.cpp" />
+    <ClCompile Include="reconstructionUtils.cpp" />
     <ClCompile Include="utilities.cpp" />
-    <ClCompile Include="visualization.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

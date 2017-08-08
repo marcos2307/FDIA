@@ -15,39 +15,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="conversions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="drawing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="visualization.h">
+    <ClInclude Include="matchingUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="matchingUtils.h">
+    <ClInclude Include="reconstructionUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="conversions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="drawing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="visualization.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Matching.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="matchingUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Reconstruction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="reconstructionUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

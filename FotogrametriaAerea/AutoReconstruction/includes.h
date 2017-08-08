@@ -80,5 +80,4 @@ public:
 		cout << "posttemp" << endl;
 		Temp.reshape(3).copyTo(points);
 	}
-
 };
