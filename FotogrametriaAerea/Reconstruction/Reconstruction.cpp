@@ -8,6 +8,7 @@
 #include "drawing.h"
 #include "matchingUtils.h"
 #include "reconstructionUtils.h"
+#include "Region.h"
 
 #define LOWE_RATIO 0.8f
 
@@ -99,8 +100,13 @@ int main()
 	P1 = Mat::eye(Size(4, 3), CV_64FC1);
 	hconcat(R, t, P2);
 
-	Mat R1, R2, Q;
-	stereoRectify(K, dist, K, dist, images[0].size(), R, t, R1, R2, P1, P2, Q);
+	Mat F = findFundamentalMat(inliers1, inliers2);
+
+	cv::FileStorage file("C:\\Users\\stn\\Desktop\\camParam\\inliers.XML", cv::FileStorage::WRITE, cv::String());
+	file.write("in1", inliers1);
+	file.write("in2", inliers2);
+	file.write("F", F);
+
 	Mat pts4D;
 
 	cout << "Triangulating.." << endl;

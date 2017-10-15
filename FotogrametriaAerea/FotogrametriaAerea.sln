@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.13
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HolaOpenCV", "HolaOpenCV\HolaOpenCV.vcxproj", "{BCD0B6D8-8CEA-47FC-950F-3656DDFC028F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Calibration", "Calibration\Calibration.vcxproj", "{ACAFC1B9-0FAF-4F77-A73A-2D89C781AD47}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "otroMatching", "otroMatching\otroMatching.vcxproj", "{EBDDC216-83AC-441C-AD84-9142E80A3957}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Reconstruction", "Reconstruction\Reconstruction.vcxproj", "{EBDDC216-83AC-441C-AD84-9142E80A3957}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DisparityMap", "DisparityMap\DisparityMap.vcxproj", "{ABF08F38-0B79-4B9B-8A08-C25C9F5B45CC}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReconstruirVariasImagenes", "ReconstruirVariasImagenes\ReconstruirVariasImagenes.vcxproj", "{25D416B2-0092-40BF-BE93-4CF229421417}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Referenciamiento", "Referenciamiento\Referenciamiento.vcxproj", "{D069BEDB-03CE-4C61-B27A-B19BD5F7346E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Densification", "Densification\Densification.vcxproj", "{92A22C01-DDD6-4E2C-BD2F-C2516B49A616}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +93,14 @@ Global
 		{D069BEDB-03CE-4C61-B27A-B19BD5F7346E}.Release|x64.Build.0 = Release|x64
 		{D069BEDB-03CE-4C61-B27A-B19BD5F7346E}.Release|x86.ActiveCfg = Release|Win32
 		{D069BEDB-03CE-4C61-B27A-B19BD5F7346E}.Release|x86.Build.0 = Release|Win32
+		{92A22C01-DDD6-4E2C-BD2F-C2516B49A616}.Debug|x64.ActiveCfg = Debug|x64
+		{92A22C01-DDD6-4E2C-BD2F-C2516B49A616}.Debug|x64.Build.0 = Debug|x64
+		{92A22C01-DDD6-4E2C-BD2F-C2516B49A616}.Debug|x86.ActiveCfg = Debug|Win32
+		{92A22C01-DDD6-4E2C-BD2F-C2516B49A616}.Debug|x86.Build.0 = Debug|Win32
+		{92A22C01-DDD6-4E2C-BD2F-C2516B49A616}.Release|x64.ActiveCfg = Release|x64
+		{92A22C01-DDD6-4E2C-BD2F-C2516B49A616}.Release|x64.Build.0 = Release|x64
+		{92A22C01-DDD6-4E2C-BD2F-C2516B49A616}.Release|x86.ActiveCfg = Release|Win32
+		{92A22C01-DDD6-4E2C-BD2F-C2516B49A616}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
