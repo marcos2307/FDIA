@@ -54,6 +54,8 @@ int main()
 	f["in2"] >> inliers2;
 	f["F"] >> F;
 
+	cout << "Inicio rectificacion\n\n";
+
 
 	//Rectificar Imagenes
 	Mat H1, H2;
@@ -72,33 +74,48 @@ int main()
 	perspectiveTransform(inliers1, newInliers1, H1);
 	perspectiveTransform(inliers2, newInliers2, H2);
 
-	//Dibujar inliers
-	//customDrawMatches(rImag1, (vector<Point2f>)newInliers1, rImag2, (vector<Point2f>)newInliers2, "Matches", 20, 13, DRAW_ONE);
+	cout << "Fin rectificacion\n\n";
+
+	Mat outputImg1, outputImg2, output;
 
 	vector<myMatch> seed, local;
 	vector<myMatch> mapPoint1, mapPoint2;
 
-	for (int i = 0; i < ((vector<Point2f>)inliers1).size(); i++)
+	for (int i = 0; i < ((vector<Point2f>)newInliers1).size(); i++)
 	{
-		seed.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
-		mapPoint1.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
-		mapPoint2.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
-		//map.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
+		if (((vector<Point2f>)newInliers1)[i].x > 10 && ((vector<Point2f>)newInliers1)[i].x < rImag1.cols - 10 &&
+			((vector<Point2f>)newInliers1)[i].y > 10 && ((vector<Point2f>)newInliers1)[i].y < rImag1.rows - 10 &&
+			((vector<Point2f>)newInliers2)[i].x > 10 && ((vector<Point2f>)newInliers2)[i].x < rImag2.cols - 10 &&
+			((vector<Point2f>)newInliers2)[i].y > 10 && ((vector<Point2f>)newInliers2)[i].y < rImag2.rows - 10)
+		{
+			seed.push_back(myMatch(((vector<Point2f>)newInliers1)[i], ((vector<Point2f>)newInliers2)[i], ZNCC(((vector<Point2f>)newInliers1)[i], ((vector<Point2f>)newInliers2)[i], rImag1, rImag2)));
+			mapPoint1.push_back(myMatch(((vector<Point2f>)newInliers1)[i], ((vector<Point2f>)newInliers2)[i], ZNCC(((vector<Point2f>)newInliers1)[i], ((vector<Point2f>)newInliers2)[i], rImag1, rImag2)));
+			mapPoint2.push_back(myMatch(((vector<Point2f>)newInliers1)[i], ((vector<Point2f>)newInliers2)[i], ZNCC(((vector<Point2f>)newInliers1)[i], ((vector<Point2f>)newInliers2)[i], rImag1, rImag2)));
+		}
 	}
+
+	cout << "Crear heaps\n\n";
 
 	make_heap(seed.begin(), seed.end(), byDistance);
 	make_heap(mapPoint1.begin(), mapPoint1.end(), byPoint1);
 	make_heap(mapPoint2.begin(), mapPoint2.end(), byPoint2);
 
+	cout << "Heaps Creados\n\n";
+
+	int T = 25000;
+
 	while (seed.size() != 0)
 	{
+		cout << "Inicia algoritmo\n\n";
 		myMatch temp(seed.front().point1, seed.front().point2, seed.front().distance);
-		std::pop_heap(seed.begin(), seed.end());
+		std::pop_heap(seed.begin(), seed.end(), byDistance);
 		seed.pop_back();
 		double t = 0.01;
-		if (temp.point1.x > 10 && temp.point1.x < rImag1.cols - 10 && temp.point1.y > 10
-			&& temp.point1.y < rImag1.rows && temp.point2.x > 10 && temp.point2.x < rImag1.cols - 10
-			&& temp.point2.y > 10 && temp.point2.y < rImag1.rows)
+
+		if (temp.point1.x > 10 && temp.point1.x < rImag1.cols - 10 &&
+			temp.point1.y > 10 && temp.point1.y < rImag1.rows - 10 &&
+			temp.point2.x > 10 && temp.point2.x < rImag2.cols - 10 &&
+			temp.point2.y > 10 && temp.point2.y < rImag2.rows - 10)
 		{
 			for (int i = -2; i < 3; ++i)
 			{
@@ -108,17 +125,19 @@ int main()
 					{
 						for (int k = i - 1 < -2 ? -2 : i - 1; k < i + 1 > 2 ? 2 : i + 1; ++k)
 						{
-							for (int l = j - 1 < -2 ? -2 : j - 1; l < j + 1 > 2 ? 2 : j + 1; ++l)
+							if (k != 0 && j != 0)
 							{
-								if (k != 0 && l != 0)
-								{
-									double x1 = (double)((int)temp.point1.x + i);
-									double y1 = (double)((int)temp.point1.y + j);
-									double x2 = (double)((int)temp.point2.x + k);
-									double y2 = (double)((int)temp.point2.y + l);
-									Point2f pt1 = Point2f(x1, y1);
-									Point2f pt2 = Point2f(x2, y2);
-									bool encontro = false;
+								double x1 = ((int)temp.point1.x + i);
+								double y1 = ((int)temp.point1.y + j);
+								double x2 = ((int)temp.point2.x + k);
+								double y2 = ((int)temp.point2.y + j);
+								Point2f pt1 = Point2f(x1, y1);
+								Point2f pt2 = Point2f(x2, y2);
+								double d = ZNCC(pt1, pt2, rImag1, rImag2);
+
+								myMatch tMatch(pt1, pt2, d);
+
+								bool encontro = false;
 									/*for (vector < myMatch >::iterator it = map.begin(); it != map.end(); ++it)
 									{
 										if (pt1 == it->point1 || pt2 == it->point2)
@@ -126,23 +145,20 @@ int main()
 											encontro = true;
 										}
 									}*/
+								cout << "busqueda binaria\n\n";
+								if (binary_search(mapPoint1.begin(), mapPoint1.end(), tMatch, compMatch1) || binary_search(mapPoint2.begin(), mapPoint2.end(), tMatch, compMatch2))
+								{
+									encontro = true;
+								}
 
-									if (binary_search(mapPoint1.begin(), mapPoint1.end(), pt1, compPointMatch1) || binary_search(mapPoint2.begin(), mapPoint2.end(), pt2, compPointMatch2))
+								if (!encontro)
+								{
+									double a = s(pt1, rImag1);
+									double b = s(pt2, rImag2);
+									if (a > t && b > t && d > 0.5)
 									{
-										encontro = true;
+										local.push_back(tMatch);
 									}
-
-									if (!encontro)
-									{
-										double d = ZNCC(pt1, pt2, rImag1, rImag2);
-										double a = s(pt1, rImag1);
-										double b = s(pt2, rImag2);
-										if (a > t && b > t && d > 0.5)
-										{
-											local.push_back(myMatch(pt1, pt2, d));
-										}
-									}
-
 								}
 							}
 						}
@@ -150,13 +166,12 @@ int main()
 				}
 			}
 		}
-
-		cout << "local.size(): " << local.size() << endl;
+		cout << "Fin de local\n\n";
 		make_heap(local.begin(), local.end(), byDistance);
 		while (local.size() != 0)
 		{
 			myMatch temp(local.front().point1, local.front().point2, local.front().distance);
-			std::pop_heap(local.begin(), local.end());
+			std::pop_heap(local.begin(), local.end(), byDistance);
 			local.pop_back();
 			bool encontro = false;
 			/*for (vector < myMatch >::iterator it = map.begin(); it != map.end(); ++it)
@@ -185,28 +200,30 @@ int main()
 
 		if (mapPoint1.size()>T)
 		{
+			destroyAllWindows();
 			T = T + 25000;
-			rCImag1.copyTo(img1);
-			images[1].copyTo(img2);
-			for (int i = 0; i < map.size(); ++i)
+			rCImag1.copyTo(outputImg1);
+			rCImag2.copyTo(outputImg2);
+			for (int i = 0; i < mapPoint1.size(); ++i)
 			{
 				Scalar color(rand() % 256, rand() % 256, rand() % 256);
-				circle(img1, map[i].p1, 10, color, 6);
-				circle(img2, map[i].p2, 10, color, 6);
+				circle(outputImg1, mapPoint1[i].point1, 10, color, 6);
+				circle(outputImg2, mapPoint1[i].point2, 10, color, 6);
 			}
-			cout << "map size: " << map.size() << endl;
-			img1.copyTo(out(rect1));
-			img2.copyTo(out(rect2));
-			namedWindow("rect", CV_WINDOW_KEEPRATIO);
-			imshow("rect", out);
-			waitKey(0);
+			cout << "map size: " << mapPoint1.size() << endl;
+			hconcat(outputImg1, outputImg2, output);
+			namedWindow("Output", CV_WINDOW_KEEPRATIO);
+			imshow("Output", output);
 		}
 		
 	}
 
-
+	waitKey(0);
+	destroyAllWindows();
 
 	cout << "map size: " << mapPoint1.size() << endl;
+
+	imwrite("C:\\Users\\stn\\Desktop\\output.jpg", output);
 
 	return 0;
 }

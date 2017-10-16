@@ -10,8 +10,9 @@ double ZNCC(cv::Point2f point1, cv::Point2f point2, cv::Mat gImg1, cv::Mat gImg2
 	cv::Mat result;
 	cv::Rect r1(point1.x - 1, point1.y - 1, 3, 3);
 	cv::Rect r2(point2.x - 1, point2.y - 1, 3, 3);
-	cv::matchTemplate(gImg1(r1), gImg2(r2), result, cv::TM_CCOEFF_NORMED);
-	
+	std::cout << "matchtemplate\n\n";
+	cv::matchTemplate(gImg2(r2), gImg1(r1), result, cv::TM_CCOEFF_NORMED);
+	std::cout << "fin correlacion\n\n";
 	return result.at<double>(0);
 }
 
@@ -54,16 +55,6 @@ bool byPoint2(myMatch a, myMatch b)
 bool byDistance(myMatch a, myMatch b)
 {
 	return (a.distance < b.distance);
-}
-
-bool compPointMatch1(myMatch b, cv::Point2f a)
-{
-	return (a.x < b.point1.x || (a.x == b.point1.x && a.y < b.point1.y));
-}
-
-bool compPointMatch2(myMatch b, cv::Point2f a)
-{
-	return (a.x < b.point2.x || (a.x == b.point2.x && a.y < b.point2.y));
 }
 
 bool compMatch1(myMatch a, myMatch b)
