@@ -75,7 +75,100 @@ int main()
 	//Dibujar inliers
 	//customDrawMatches(rImag1, (vector<Point2f>)newInliers1, rImag2, (vector<Point2f>)newInliers2, "Matches", 20, 13, DRAW_ONE);
 
-	vector<myMatch> 
+	vector<myMatch> seed, local;
+	vector<myMatch> map;
+
+	for (int i = 0; i < ((vector<Point2f>)inliers1).size(); i++)
+	{
+		seed.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
+		map.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
+	}
+
+	make_heap(seed.begin(), seed.end());
+	int T = 25000;
+	while (seed.size() != 0)
+	{
+		myMatch temp(seed.front().point1, seed.front().point2, seed.front().distance);
+		std::pop_heap(seed.begin(), seed.end());
+		seed.pop_back();
+		double t = 0.01;
+		if (temp.point1.x > 10 && temp.point1.x < rImag1.cols - 10 && temp.point1.y > 10
+			&& temp.point1.y < rImag1.rows && temp.point2.x > 10 && temp.point2.x < rImag1.cols - 10
+			&& temp.point2.y > 10 && temp.point2.y < rImag1.rows)
+		{
+			for (int i = -2; i < 3; ++i)
+			{
+				for (int j = -2; j < 3; ++j)
+				{
+					if (i != 0 && j != 0)
+					{
+						for (int k = i - 1 < -2 ? -2 : i - 1; k < i + 1 > 2 ? 2 : i + 1; ++k)
+						{
+							for (int l = j - 1 < -2 ? -2 : j - 1; l < j + 1 > 2 ? 2 : j + 1; ++l)
+							{
+								if (k != 0 && l != 0)
+								{
+									double x1 = (double)((int)temp.point1.x + i);
+									double y1 = (double)((int)temp.point1.y + j);
+									double x2 = (double)((int)temp.point2.x + k);
+									double y2 = (double)((int)temp.point2.y + l);
+									Point2f pt1 = Point2f(x1, y1);
+									Point2f pt2 = Point2f(x2, y2);
+									bool encontro = false;
+									for (vector < myMatch >::iterator it = map.begin(); it != map.end(); ++it)
+									{
+										if (pt1 == it->point1 || pt2 == it->point2)
+										{
+											encontro = true;
+										}
+									}
+									if (!encontro)
+									{
+										double d = ZNCC(pt1, pt2, rImag1, rImag2);
+										double a = s(pt1, rImag1);
+										double b = s(pt2, rImag2);
+										if (a > t && b > t && d > 0.5)
+										{
+											local.push_back(myMatch(pt1, pt2, d));
+										}
+									}
+
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		cout << "local.size(): " << local.size() << endl;
+		make_heap(local.begin(), local.end());
+		while (local.size() != 0)
+		{
+			myMatch temp(local.front().point1, local.front().point2, local.front().distance);
+			std::pop_heap(local.begin(), local.end());
+			local.pop_back();
+			bool encontro = false;
+			for (vector < myMatch >::iterator it = map.begin(); it != map.end(); ++it)
+			{
+				if (temp.point1 == it->point1 || temp.point2 == it->point2)
+				{
+					encontro = true;
+				}
+			}
+			if (!encontro)
+			{
+				seed.push_back(temp);
+				push_heap(seed.begin(), seed.end());
+				map.push_back(temp);
+			}
+		}
+		
+	}
+
+
+
+	cout << "map size: " << map.size() << endl;
 
 	return 0;
 }
