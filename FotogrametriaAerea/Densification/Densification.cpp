@@ -76,16 +76,20 @@ int main()
 	//customDrawMatches(rImag1, (vector<Point2f>)newInliers1, rImag2, (vector<Point2f>)newInliers2, "Matches", 20, 13, DRAW_ONE);
 
 	vector<myMatch> seed, local;
-	vector<myMatch> map;
+	vector<myMatch> mapPoint1, mapPoint2;
 
 	for (int i = 0; i < ((vector<Point2f>)inliers1).size(); i++)
 	{
 		seed.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
-		map.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
+		mapPoint1.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
+		mapPoint2.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
+		//map.push_back(myMatch(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], ZNCC(((vector<Point2f>)inliers1)[i], ((vector<Point2f>)inliers2)[i], rImag1, rImag2)));
 	}
 
-	make_heap(seed.begin(), seed.end());
-	int T = 25000;
+	make_heap(seed.begin(), seed.end(), byDistance);
+	make_heap(mapPoint1.begin(), mapPoint1.end(), byPoint1);
+	make_heap(mapPoint2.begin(), mapPoint2.end(), byPoint2);
+
 	while (seed.size() != 0)
 	{
 		myMatch temp(seed.front().point1, seed.front().point2, seed.front().distance);
@@ -115,13 +119,19 @@ int main()
 									Point2f pt1 = Point2f(x1, y1);
 									Point2f pt2 = Point2f(x2, y2);
 									bool encontro = false;
-									for (vector < myMatch >::iterator it = map.begin(); it != map.end(); ++it)
+									/*for (vector < myMatch >::iterator it = map.begin(); it != map.end(); ++it)
 									{
 										if (pt1 == it->point1 || pt2 == it->point2)
 										{
 											encontro = true;
 										}
+									}*/
+
+									if (binary_search(mapPoint1.begin(), mapPoint1.end(), pt1, compPointMatch1) || binary_search(mapPoint2.begin(), mapPoint2.end(), pt2, compPointMatch2))
+									{
+										encontro = true;
 									}
+
 									if (!encontro)
 									{
 										double d = ZNCC(pt1, pt2, rImag1, rImag2);
@@ -142,25 +152,34 @@ int main()
 		}
 
 		cout << "local.size(): " << local.size() << endl;
-		make_heap(local.begin(), local.end());
+		make_heap(local.begin(), local.end(), byDistance);
 		while (local.size() != 0)
 		{
 			myMatch temp(local.front().point1, local.front().point2, local.front().distance);
 			std::pop_heap(local.begin(), local.end());
 			local.pop_back();
 			bool encontro = false;
-			for (vector < myMatch >::iterator it = map.begin(); it != map.end(); ++it)
+			/*for (vector < myMatch >::iterator it = map.begin(); it != map.end(); ++it)
 			{
 				if (temp.point1 == it->point1 || temp.point2 == it->point2)
 				{
 					encontro = true;
 				}
+			}*/
+
+			if (binary_search(mapPoint1.begin(), mapPoint1.end(), temp, compMatch1) || binary_search(mapPoint2.begin(), mapPoint2.end(), temp, compMatch2))
+			{
+				encontro = true;
 			}
+
 			if (!encontro)
 			{
 				seed.push_back(temp);
-				push_heap(seed.begin(), seed.end());
-				map.push_back(temp);
+				push_heap(seed.begin(), seed.end(), byDistance);
+				mapPoint1.push_back(temp);
+				mapPoint2.push_back(temp);
+				push_heap(mapPoint1.begin(), mapPoint1.end(), byPoint1);
+				push_heap(mapPoint2.begin(), mapPoint2.end(), byPoint2);
 			}
 		}
 		
@@ -168,7 +187,7 @@ int main()
 
 
 
-	cout << "map size: " << map.size() << endl;
+	cout << "map size: " << mapPoint1.size() << endl;
 
 	return 0;
 }
