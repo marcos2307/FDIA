@@ -59,12 +59,12 @@ int main()
 	Mat H1, H2;
 	stereoRectifyUncalibrated(inliers1, inliers2, F, grayImages[0].size(), H1, H2);
 
-	Mat rGImag1, rGImag2, rImag1, rImag2;
-	warpPerspective(grayImages[0], rGImag1, H1, grayImages[0].size());
-	warpPerspective(grayImages[1], rGImag2, H2, grayImages[1].size());
+	Mat rImag1, rImag2, rCImag1, rCImag2;
+	warpPerspective(grayImages[0], rImag1, H1, grayImages[0].size());
+	warpPerspective(grayImages[1], rImag2, H2, grayImages[1].size());
 
-	warpPerspective(images[0], rImag1, H1, images[0].size());
-	warpPerspective(images[1], rImag2, H2, images[1].size());
+	warpPerspective(images[0], rCImag1, H1, images[0].size());
+	warpPerspective(images[1], rCImag2, H2, images[1].size());
 
 	//Nuevas coordenadas de los inliers
 	Mat newInliers1, newInliers2;
@@ -181,6 +181,25 @@ int main()
 				push_heap(mapPoint1.begin(), mapPoint1.end(), byPoint1);
 				push_heap(mapPoint2.begin(), mapPoint2.end(), byPoint2);
 			}
+		}
+
+		if (mapPoint1.size()>T)
+		{
+			T = T + 25000;
+			rCImag1.copyTo(img1);
+			images[1].copyTo(img2);
+			for (int i = 0; i < map.size(); ++i)
+			{
+				Scalar color(rand() % 256, rand() % 256, rand() % 256);
+				circle(img1, map[i].p1, 10, color, 6);
+				circle(img2, map[i].p2, 10, color, 6);
+			}
+			cout << "map size: " << map.size() << endl;
+			img1.copyTo(out(rect1));
+			img2.copyTo(out(rect2));
+			namedWindow("rect", CV_WINDOW_KEEPRATIO);
+			imshow("rect", out);
+			waitKey(0);
 		}
 		
 	}
