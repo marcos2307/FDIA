@@ -10,7 +10,7 @@ struct miMatch
 	double distance = INF;
 	Point2f p1 = Point2f(0, 0);
 	Point2f p2 = Point2f(0, 0);
-	miMatch(double distance, Point2f p1, Point2f p2) 
+	miMatch(double distance, Point2i p1, Point2f p2) 
 	{
 		this->distance = distance;
 		this->p1 = p1;
@@ -102,7 +102,7 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 		}
 	}
 
-	//graficarMatches(img1, img2, pts1, pts2);
+	graficarMatches(img1, img2, pts1, pts2);
 
 	cout << "initial good points: " << good1.size() << endl;
 
@@ -136,9 +136,6 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 
 	cout << "inliers: " << pts1i.size() << endl;
 
-	Mat R, tr;
-	recoverPose(E, pts1i, pts2i, K, R, tr);
-
 	Mat H1, H2;
 	Mat imag1, imag2;
 	imag1 = grayImages[0];
@@ -153,21 +150,24 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 
 	for (int i = 0; i < pts1i.size(); i++)
 	{
+		Mat x1, x2;
+		vconcat(Mat(pts1i[i]), Mat::eye(1, 1, CV_32FC1), x1);
+		vconcat(Mat(pts2i[i]), Mat::eye(1, 1, CV_32FC1), x2);
+		F.convertTo(F, CV_32F);
 		seed.push_back(miMatch(ZNCC(pts1i[i], pts2i[i], imag1, imag2), pts1i[i], pts2i[i]));
 		map.push_back(miMatch(ZNCC(pts1i[i], pts2i[i], imag1, imag2), pts1i[i], pts2i[i]));
 	}
-	
+	double eps = 1;
 	make_heap(seed.begin(), seed.end());
-	int T = 25000;
+	int T = 2;
 	while (seed.size() != 0) 
 	{
 		miMatch temp(seed.front().distance, seed.front().p1, seed.front().p2);
 		std::pop_heap(seed.begin(), seed.end());
 		seed.pop_back();
 		double t = 0.01;
-		if(temp.p1.x > 10 && temp.p1.x < imag1.cols - 10 && temp.p1.y > 10 
-			&& temp.p1.y < imag1.rows && temp.p2.x > 10 && temp.p2.x < imag1.cols - 10 
-			&& temp.p2.y > 10 && temp.p2.y < imag1.rows)
+		if(temp.p1.x > 10 && temp.p1.x < imag1.cols - 10 && temp.p1.y > 10 && temp.p1.y < imag1.rows - 10 && 
+		   temp.p2.x > 10 && temp.p2.x < imag1.cols - 10 && temp.p2.y > 10 && temp.p2.y < imag1.rows - 10)
 		{ 
 			for (int i = -2; i < 3; ++i) 
 		{
@@ -175,9 +175,9 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 			{
 				if (i != 0 && j != 0) 
 				{
-					for (int k = i-1 < -2? -2:i-1; k < i+1 > 2? 2: i+1; ++k)
+					for (int k = max(-2, i-1); k <= min(2, i+1); ++k)
 					{
-						for (int l = j - 1 < -2 ? -2 : j - 1; l < j + 1 > 2 ? 2 : j + 1; ++l)
+						for (int l = max(-2, j - 1); l <= min(2, j + 1); ++l)
 						{
 							if (k != 0 && l != 0) 
 							{
@@ -190,7 +190,7 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 								bool encontro = false;
 								for (vector < miMatch >::iterator it = map.begin(); it != map.end(); ++it)
 								{
-									if (pt1 == it->p1 || pt2 == it->p2) 
+									if ((abs(pt1.x - it->p1.x) < eps && abs(pt1.y - it->p1.y) < eps )||(abs(pt1.x  -it->p1.x) < eps && abs(pt1.y - it->p1.y) < eps ))
 									{
 										encontro = true;
 									}
@@ -200,7 +200,7 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 									double d = ZNCC(pt1, pt2, imag1, imag2);
 									double a = s(pt1, imag1);
 									double b = s(pt2, imag2);
-									if (a > t && b > t && d > 0.5)
+									if (a > t && b > t && d > 0.7)
 									{
 										local.push_back(miMatch(d, pt1, pt2));
 									}
@@ -214,7 +214,6 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 		}
 		}
 		
-		cout << "local.size(): " << local.size() << endl;
 		make_heap(local.begin(), local.end());
 		while (local.size() != 0) 
 		{
@@ -224,23 +223,53 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 			bool encontro = false;
 			for (vector < miMatch >::iterator it = map.begin(); it != map.end(); ++it)
 			{
-				if (temp.p1 == it->p1 || temp.p2 == it->p2)
+				if ((abs(temp.p1.x - it->p1.x) < eps && abs(temp.p1.y - it->p1.y) < eps) || (abs(temp.p1.x - it->p1.x) < eps && abs(temp.p1.y - it->p1.y) < eps))
 				{
 					encontro = true;
 				}
 			}
 			if (!encontro)
 			{
-				seed.push_back(temp);
-				push_heap(seed.begin(), seed.end());
-				map.push_back(temp);
+				Mat x1, x2;
+				vconcat( Mat(temp.p1), Mat::eye(1,1,CV_32FC1), x1);
+				vconcat(Mat(temp.p2), Mat::eye(1, 1, CV_32FC1), x2);
+				Mat m = x2.t()*F*x1;
+				if (abs(m.at<float>(0)) < 0.01)
+				{
+					seed.push_back(temp);
+					push_heap(seed.begin(), seed.end());
+					map.push_back(temp);
+				}
+
 			}
 		}
 		if(map.size()>T)
 		{
-			T = T + 25000;
+			vector< Vec3b > color;
+			vector < Point2f > densified1, densified2;
+			for (int i = 0; i < map.size(); ++i)
+			{
+				densified1.push_back(map[i].p1);
+				densified2.push_back(map[i].p2);
+				color.push_back(images[0].at<Vec3b>(map[i].p1));
+			}
+			T = 2*T;
 			images[0].copyTo(img1);
 			images[1].copyTo(img2);
+			inlier.clear();
+			E = findEssentialMat(densified1, densified2, K, CV_RANSAC, 0.99, 3.0, inlier);
+			F = findFundamentalMat(densified1, densified2, CV_FM_RANSAC, 3.0, 0.99, inlier);
+			F.convertTo(F, CV_32F);
+			for (int i = 0; i < inlier.size(); i++)
+			{
+				if (inlier.at(i) != 0)
+				{
+					pts2i.push_back(densified2[i]);
+					pts1i.push_back(densified1[i]); //bf.match(query, train)
+				}
+			}
+			densified1 = pts1i;
+			densified2 = pts2i;
 			for (int i = 0; i < map.size(); ++i)
 			{
 				Scalar color(rand() % 256, rand() % 256, rand() % 256);
@@ -252,62 +281,44 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 			img2.copyTo(out(rect2));
 			namedWindow("rect", CV_WINDOW_KEEPRATIO);
 			imshow("rect", out);
-			waitKey(0);
+			waitKey(15000);
+			destroyWindow("rect");
+		}
+		if (map.size() > 150000)
+		{
+			break;
 		}
 	}
-
-	
+	vector< Vec3b > color;
+	vector < Point2f > densified1, densified2;
+	for (int i = 0; i < map.size(); ++i)
+	{
+		densified1.push_back(map[i].p1);
+		densified2.push_back(map[i].p2);
+		color.push_back(images[0].at<Vec3b>(map[i].p1));
+	}
 
 	cout << "map size: " << map.size() << endl;
 	imwrite("res.PNG", out);
 
+	Mat R, tr;
+	recoverPose(E, densified1, densified2, K, R, tr);
+	cout << "Triangulating.." << endl;
+	Mat P1, P2;
+	Mat R1 = Mat::eye(3, 3, CV_64FC1);
+	Mat t1 = Mat::zeros(3, 1, CV_64FC1);
+	hconcat(R1, t1, P1);
+	hconcat(R, tr, P2);
 
+	Mat pts4D;
+	triangulatePoints(K*P1, K*P2, densified1, densified2, pts4D);
+	//cout << pts4D << endl;
+	pts4D = pts4D.t();
+	Mat pts3D;
+	convertPointsFromHomogeneous(pts4D, pts3D);
 
-
-	//cvtColor(imag1, imag1, COLOR_BGR2GRAY);
-	//cvtColor(imag2, imag2, COLOR_BGR2GRAY);
-
-	//Ptr<StereoBM> s = StereoBM::create(512, 3);
-	//Mat d;
-	//s->compute(imag1, imag2, d);
-	//imwrite("disparityMap.JPG", d);
-
-
-	//cout << "R*R1 t de la matriz Esencial:" << endl << R*R1 << tr << endl;
-	//cout << "R del GPS" << ypr2rm(info[1]) * Rz << ", " << endl;
-	//double dh = abs(info[1].height - info[0].height);
-	//Mat t = -(R1*tr); //tr es relativa a C1 por lo que debe transformarse a las coordenadas de tierra
-	//double S = 30; // dh / t.at<double>(2);
-	//cout << "lat1, lon1: " << info[0].latitude << ", " << info[0].longitude << endl;
-	//cout << "lat2, lon2: " << info[1].latitude << ", " << info[1].longitude << endl;
-	//cout << "distancia en metros entre camaras(escala): " << S << endl;
-	//Mat I1 = C1.getR().clone();
-	//Mat I2 = C1.getT().clone();
-	//Camera C2(I1, I2);
-	//cout << " posicion de C2: " << C2.getT() << endl << " y R: " << C2.getR() << endl;
-	//cout << "t: " << t << endl << "S*t: " << S*t << endl;
-	//C2.rotoTrans(R, S*t);
-	//cout << "C1: (R t)" << endl << C1.getR() << endl << C1.getT() << endl;
-	//cout << "C2: (R t)" << endl << C2.getR() << endl << C2.getT() << endl;
-	//vector<Camera> cam;
-	//cam.push_back(C1);
-	//cam.push_back(C2);
-	//cout << "camara1con rototranslacion:" << Mat(C1.getPoints()) << endl;
-	//hconcat(C2.getR(), C2.getT(), P2);
-	////Mat R1, R2, Q;
-	////stereoRectify(K, dist, K, dist, images[0].size(), R, t, R1, R2, P1, P2, Q);
-	//Mat pts4D;
-	//cout << "P1 P2:" << endl << P1 << endl << P2 << endl;
-	//cout << "Triangulating.." << endl;
-	//triangulatePoints(K*P1, K*P2, pts1i, pts2i, pts4D);
-	////cout << pts4D << endl;
-	//pts4D = pts4D.t();
-	//Mat pts3D;
-	//convertPointsFromHomogeneous(pts4D, pts3D);
-
-	//cout << "Creating PLY file.." << endl;
-	//generatePLY("Nube", pts3D, color1);
-	//prueba
+	cout << "Creating PLY file.." << endl;
+	generatePLY("Nube", pts3D, color);
 }
 
 pair<int, int> rellenar2(int inicio1, int fin1, int inicio2, int fin2, int row, Mat img1, Mat img2, int ws)
