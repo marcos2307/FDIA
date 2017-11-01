@@ -67,9 +67,9 @@ void customDrawMatches(cv::Mat& inputImage1, std::vector<cv::Point2f>& kPoints1,
 			dspImage = auxiliar3;
 		}
 		cv::Point2f kPoint2A(kPoints2.at(i).x + inputImage1.cols, kPoints2.at(i).y);
-		cv::circle(dspImage, kPoints1.at(i), radius, color, -1);
-		cv::circle(dspImage, kPoint2A, radius, color, -1);
-		cv::line(dspImage, kPoints1.at(i), kPoint2A, color, thickness);
+		cv::circle(dspImage, kPoints1.at(i), radius, color, 6);
+		cv::circle(dspImage, kPoint2A, radius, color, 6);
+		//cv::line(dspImage, kPoints1.at(i), kPoint2A, color, thickness);
 		if (option != DRAW_ALL)
 		{
 			cv::namedWindow(winName, cv::WINDOW_KEEPRATIO);

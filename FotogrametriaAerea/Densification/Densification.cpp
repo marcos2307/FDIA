@@ -29,14 +29,6 @@ int main()
 	getImages(images, path);
 	//Conversion to Gray
 	color2Gray(images, grayImages);
-
-	/*Rect region_of_interest = Rect(3000, 3000, 1500, 1500);
-	Mat image_roi = images[0](region_of_interest);
-
-	namedWindow("Rect", WINDOW_FREERATIO);
-	imshow("Rect", image_roi);
-	waitKey(0);
-	destroyAllWindows();*/
 	
 
 	//Camera parameters
@@ -97,16 +89,15 @@ int main()
 	cout << "Crear heaps\n\n";
 
 	make_heap(seed.begin(), seed.end(), byDistance);
-	make_heap(mapPoint1.begin(), mapPoint1.end(), byPoint1);
-	make_heap(mapPoint2.begin(), mapPoint2.end(), byPoint2);
+	sort(mapPoint1.begin(), mapPoint1.end(), byPoint1);
+	sort(mapPoint2.begin(), mapPoint2.end(), byPoint2);
 
 	cout << "Heaps Creados\n\n";
 
-	int T = 25000;
+	int T = 50000;
 
 	while (seed.size() != 0)
 	{
-		cout << "Inicia algoritmo\n\n";
 		myMatch temp(seed.front().point1, seed.front().point2, seed.front().distance);
 		std::pop_heap(seed.begin(), seed.end(), byDistance);
 		seed.pop_back();
@@ -121,11 +112,11 @@ int main()
 			{
 				for (int j = -2; j < 3; ++j)
 				{
-					if (i != 0 && j != 0)
+					if (i != 0 || j != 0)
 					{
-						for (int k = i - 1 < -2 ? -2 : i - 1; k < i + 1 > 2 ? 2 : i + 1; ++k)
+						for (int k = (i < -1) ? -2 : i - 1; k < ((i > 1) ? 2 : i + 1); ++k)
 						{
-							if (k != 0 && j != 0)
+							if (k != 0 || j != 0)
 							{
 								double x1 = ((int)temp.point1.x + i);
 								double y1 = ((int)temp.point1.y + j);
@@ -138,17 +129,11 @@ int main()
 								myMatch tMatch(pt1, pt2, d);
 
 								bool encontro = false;
-									/*for (vector < myMatch >::iterator it = map.begin(); it != map.end(); ++it)
-									{
-										if (pt1 == it->point1 || pt2 == it->point2)
-										{
-											encontro = true;
-										}
-									}*/
-								cout << "busqueda binaria\n\n";
+									
 								if (binary_search(mapPoint1.begin(), mapPoint1.end(), tMatch, compMatch1) || binary_search(mapPoint2.begin(), mapPoint2.end(), tMatch, compMatch2))
 								{
 									encontro = true;
+									continue;
 								}
 
 								if (!encontro)
@@ -166,7 +151,6 @@ int main()
 				}
 			}
 		}
-		cout << "Fin de local\n\n";
 		make_heap(local.begin(), local.end(), byDistance);
 		while (local.size() != 0)
 		{
@@ -174,17 +158,11 @@ int main()
 			std::pop_heap(local.begin(), local.end(), byDistance);
 			local.pop_back();
 			bool encontro = false;
-			/*for (vector < myMatch >::iterator it = map.begin(); it != map.end(); ++it)
-			{
-				if (temp.point1 == it->point1 || temp.point2 == it->point2)
-				{
-					encontro = true;
-				}
-			}*/
 
 			if (binary_search(mapPoint1.begin(), mapPoint1.end(), temp, compMatch1) || binary_search(mapPoint2.begin(), mapPoint2.end(), temp, compMatch2))
 			{
 				encontro = true;
+				continue;
 			}
 
 			if (!encontro)
@@ -193,15 +171,14 @@ int main()
 				push_heap(seed.begin(), seed.end(), byDistance);
 				mapPoint1.push_back(temp);
 				mapPoint2.push_back(temp);
-				push_heap(mapPoint1.begin(), mapPoint1.end(), byPoint1);
-				push_heap(mapPoint2.begin(), mapPoint2.end(), byPoint2);
+				sort(mapPoint1.begin(), mapPoint1.end(), byPoint1);
+				sort(mapPoint2.begin(), mapPoint2.end(), byPoint2);
 			}
 		}
 
 		if (mapPoint1.size()>T)
 		{
-			destroyAllWindows();
-			T = T + 25000;
+			T *= 2;
 			rCImag1.copyTo(outputImg1);
 			rCImag2.copyTo(outputImg2);
 			for (int i = 0; i < mapPoint1.size(); ++i)
@@ -211,19 +188,15 @@ int main()
 				circle(outputImg2, mapPoint1[i].point2, 10, color, 6);
 			}
 			cout << "map size: " << mapPoint1.size() << endl;
-			hconcat(outputImg1, outputImg2, output);
-			namedWindow("Output", CV_WINDOW_KEEPRATIO);
-			imshow("Output", output);
+			hconcat(outputImg1, outputImg2, output); 
+			imshow("hola", output);
+			waitKey(0);
+			destroyAllWindows();
 		}
 		
 	}
 
-	waitKey(0);
-	destroyAllWindows();
-
 	cout << "map size: " << mapPoint1.size() << endl;
-
-	imwrite("C:\\Users\\stn\\Desktop\\output.jpg", output);
 
 	return 0;
 }

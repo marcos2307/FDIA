@@ -10,9 +10,8 @@ double ZNCC(cv::Point2f point1, cv::Point2f point2, cv::Mat gImg1, cv::Mat gImg2
 	cv::Mat result;
 	cv::Rect r1(point1.x - 1, point1.y - 1, 3, 3);
 	cv::Rect r2(point2.x - 1, point2.y - 1, 3, 3);
-	cv::matchTemplate(gImg2(r2), gImg1(r1), result, cv::TM_CCOEFF_NORMED);
-	double resultado = result.at<double>(0,0);
-	return resultado;
+	cv::matchTemplate(gImg1(r1), gImg2(r2), result, cv::TM_CCOEFF_NORMED);
+	return result.at<double>(0);
 }
 
 double s(cv::Point2f x, cv::Mat M)
@@ -24,14 +23,14 @@ double s(cv::Point2f x, cv::Mat M)
 	right.x++;
 	double d[4] = { 0 };
 
-	d[0] = abs(M.at<char>(up) - M.at<char>(x)) / (double)255;
-	d[1] = abs(M.at<char>(down) - M.at<char>(x)) / (double)255;
-	d[2] = abs(M.at<char>(left) - M.at<char>(x)) / (double)255;
-	d[3] = abs(M.at<char>(right) - M.at<char>(x)) / (double)255;
+	d[0] = (double)abs(M.at<char>(up) - M.at<char>(x)) / 255;
+	d[1] = (double)abs(M.at<char>(down) - M.at<char>(x)) / 255;
+	d[2] = (double)abs(M.at<char>(left) - M.at<char>(x)) / 255;
+	d[3] = (double)abs(M.at<char>(right) - M.at<char>(x)) / 255;
 	double max = 0;
 	for (int i = 0; i < 4; ++i)
 	{
-		max = d[i] > max ? d[i] : max;
+		max = (d[i] > max) ? d[i] : max;
 	}
 	return max;
 }
@@ -43,7 +42,7 @@ bool compPoints(cv::Point2f a, cv::Point2f b)
 
 bool byPoint1(myMatch a, myMatch b)
 {
-	return (compPoints(a.point1,b.point1));
+	return (compPoints(a.point1, b.point1));
 }
 
 bool byPoint2(myMatch a, myMatch b)
@@ -51,9 +50,9 @@ bool byPoint2(myMatch a, myMatch b)
 	return (compPoints(a.point2, b.point2));
 }
 
-bool byDistance(myMatch a, myMatch b)
+bool byQuality(myMatch a, myMatch b)
 {
-	return (a.distance < b.distance);
+	return (a.quality < b.quality);
 }
 
 bool compMatch1(myMatch a, myMatch b)

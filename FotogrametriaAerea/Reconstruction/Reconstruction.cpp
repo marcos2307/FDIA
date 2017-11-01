@@ -92,20 +92,22 @@ int main()
 	//Get inliers' colors
 	getColors(images.at(0), images.at(1), inliers1, inliers2, colors1, colors2);
 
+	//customDrawMatches(images[0], inliers1, images[1], inliers2);
+
 	Mat R, t;
 
 	recoverPose(E, inliers1, inliers2, K, R, t, noArray());
 	cout << "R t:" << endl << R << t << endl;
 	Mat P1, P2;
-	P1 = Mat::eye(Size(4, 3), CV_64FC1);
+	P1 = Mat::eye(Size(4,3), CV_64FC1);
 	hconcat(R, t, P2);
 
-	Mat F = findFundamentalMat(inliers1, inliers2);
+	//Mat F = findFundamentalMat(inliers1, inliers2);
 
 	cv::FileStorage file("C:\\Users\\stn\\Desktop\\camParam\\inliers.XML", cv::FileStorage::WRITE, cv::String());
 	file.write("in1", inliers1);
 	file.write("in2", inliers2);
-	file.write("F", F);
+	//file.write("F", F);
 
 	Mat pts4D;
 
