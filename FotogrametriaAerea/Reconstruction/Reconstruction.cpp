@@ -11,6 +11,7 @@
 #include "Region.h"
 
 #define LOWE_RATIO 0.8f
+#define INF 2147483647
 
 using namespace std;
 using namespace cv;
@@ -294,4 +295,34 @@ void densification()
 
 	cout << "map size: " << map.size() << endl;
 	imwrite("res.PNG", out);
+}
+
+double s(Point2f x, Mat M)
+{
+	Point2f up(x), down(x), left(x), right(x);
+	up.y++;
+	down.y--;
+	left.x--;
+	right.x++;
+	double d[4] = { 0 };
+
+	d[0] = abs(M.at<char>(up) - M.at<char>(x)) / (double)255;
+	d[1] = abs(M.at<char>(down) - M.at<char>(x)) / (double)255;
+	d[2] = abs(M.at<char>(left) - M.at<char>(x)) / (double)255;
+	d[3] = abs(M.at<char>(right) - M.at<char>(x)) / (double)255;
+	double max = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		max = d[i] > max ? d[i] : max;
+	}
+	return max;
+}
+
+double ZNCC(Point2f p1, Point2f p2, Mat gray1, Mat gray2)
+{
+	Mat res;
+	Rect r1(p1.x - 1, p1.y - 1, 3, 3);
+	Rect r2(p2.x - 1, p2.y - 1, 3, 3);
+	matchTemplate(gray1(r1), gray2(r2), res, TM_CCOEFF_NORMED);
+	return res.at<float>(0);
 }
