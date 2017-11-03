@@ -15,6 +15,28 @@
 using namespace std;
 using namespace cv;
 
+struct miMatch
+{
+	double distance = INF;
+	Point2f p1 = Point2f(0, 0);
+	Point2f p2 = Point2f(0, 0);
+	miMatch(double distance, Point2f p1, Point2f p2)
+	{
+		this->distance = distance;
+		this->p1 = p1;
+		this->p2 = p2;
+	}
+	void print(void)
+	{
+		cout << "distance: " << distance << endl;
+		cout << "p1: (" << p1.x << ", " << p1.y << ")" << endl;
+		cout << "p2: (" << p2.x << ", " << p2.y << ")" << endl;
+	}
+};
+
+double s(Point2f x, Mat M);
+double ZNCC(Point2f p1, Point2f p2, Mat gray1, Mat gray2);
+
 void match(vector<Mat> descriptors, vector<KeyPoint> keyPoints1, vector<KeyPoint> keyPoints2, vector<DMatch> &goodMatches, vector<Point2f> &srcPoints, vector<Point2f> &dstPoints);
 void detectComputeDescriptors(vector<Mat> grayImages, vector<vector<KeyPoint>> &keyPoints, vector<Mat> &descriptors, int treshold, int octaves, float patternScale);
 void densification();
