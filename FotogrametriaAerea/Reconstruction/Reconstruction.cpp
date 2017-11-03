@@ -16,6 +16,8 @@ using namespace std;
 using namespace cv;
 
 void match(vector<Mat> descriptors, vector<KeyPoint> keyPoints1, vector<KeyPoint> keyPoints2, vector<DMatch> &goodMatches, vector<Point2f> &srcPoints, vector<Point2f> &dstPoints);
+void detectComputeDescriptors(vector<Mat> grayImages, vector<vector<KeyPoint>> &keyPoints, vector<Mat> &descriptors, int treshold, int octaves, float patternScale);
+void densification();
 
 int main()
 {
@@ -55,16 +57,7 @@ int main()
 	//Conversion to Gray
 	color2Gray(images, grayImages);
 
-	//Key points detection
-	Ptr<BRISK> detector = BRISK::create(treshold, octaves, patternScale);
-	cout << "\nDetecting keypoints...\n";
-	detector->detect(grayImages, keyPoints);
-	cout << "Keypoints detected\n";
-
-	//Descriptors computation
-	cout << "\nComputing descriptors...\n";
-	detector->compute(grayImages, keyPoints, descriptors);
-	cout << "Finished descriptors computation\n";
+	detectComputeDescriptors(grayImages, keyPoints, descriptors, treshold, octaves, patternScale);
 
 	//Matching and filtering
 	cout << "Matching Keypoints and filtering Matches...\n";
@@ -82,6 +75,7 @@ int main()
 	Mat E = findEssentialMat(srcPoints, dstPoints, K, RANSAC, confidence, reprojError, mask);
 	cout << "Essential Matrix Ready\n";
 
+	densification();
 
 	vector<Vec3b> colors1, colors2;
 	vector<Point2f> inliers1, inliers2;
@@ -89,6 +83,7 @@ int main()
 	cout << "\nGetting inliers...\n";
 	getInliers(srcPoints, dstPoints, mask, inliers1, inliers2);
 	cout << "Inliers Ready\nGetting Inliers' colors...\n";
+	
 	//Get inliers' colors
 	getColors(images.at(0), images.at(1), inliers1, inliers2, colors1, colors2);
 
@@ -147,4 +142,23 @@ void match(vector<Mat> descriptors, vector<KeyPoint> keyPoints1, vector<KeyPoint
 	retrieveKeyPoints(goodMatches, keyPoints1, keyPoints2, srcPoints, dstPoints);
 
 	cout << "Keypoints retrieved\n\n";
+}
+
+void detectComputeDescriptors(vector<Mat> grayImages, vector<vector<KeyPoint>> &keyPoints, vector<Mat> &descriptors, int treshold, int octaves, float patternScale)
+{
+	//Key points detection
+	Ptr<BRISK> detector = BRISK::create(treshold, octaves, patternScale);
+	cout << "\nDetecting keypoints...\n";
+	detector->detect(grayImages, keyPoints);
+	cout << "Keypoints detected\n";
+
+	//Descriptors computation
+	cout << "\nComputing descriptors...\n";
+	detector->compute(grayImages, keyPoints, descriptors);
+	cout << "Finished descriptors computation\n";
+}
+
+void densification()
+{
+
 }
