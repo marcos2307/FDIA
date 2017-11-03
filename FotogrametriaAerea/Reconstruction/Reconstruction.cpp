@@ -199,5 +199,9 @@ void densification(vector<miMatch> &seed, vector<miMatch> &map, vector<Mat> imag
 	make_heap(mapP1.begin(), mapP1.end(), byPoint1);
 	make_heap(mapP2.begin(), mapP2.end(), byPoint2);
 
-	
+	while (seed.size() > 0)
+	{
+		pop_heap(seed.begin(), seed.end());
+
+	}
 }
