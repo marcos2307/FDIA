@@ -9,9 +9,10 @@
 #include "matchingUtils.h"
 #include "reconstructionUtils.h"
 #include "Region.h"
+#include "algorithm"
 
-#define LOWE_RATIO 0.8f
-#define INF 2147483647
+#define LOWE_RATIO 0.8f //Razon de Lowe
+#define INF 2147483647  //Infinito
 
 using namespace std;
 using namespace cv;
@@ -181,10 +182,12 @@ void detectComputeDescriptors(vector<Mat> grayImages, vector<vector<KeyPoint>> &
 	cout << "Finished descriptors computation\n";
 }
 
-void densification()
+void densification(vector<Point2f> pts1i, vector<Point2f> pts2i, Mat imag1, Mat imag2, Mat img1, Mat img2, vector<Mat> images)
 {
 	vector< miMatch > seed, local;
 	vector < miMatch > map;
+
+	Mat out;
 
 	for (int i = 0; i < pts1i.size(); i++)
 	{
