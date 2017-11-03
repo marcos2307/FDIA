@@ -160,5 +160,116 @@ void detectComputeDescriptors(vector<Mat> grayImages, vector<vector<KeyPoint>> &
 
 void densification()
 {
+	vector< miMatch > seed, local;
+	vector < miMatch > map;
 
+	for (int i = 0; i < pts1i.size(); i++)
+	{
+		seed.push_back(miMatch(ZNCC(pts1i[i], pts2i[i], imag1, imag2), pts1i[i], pts2i[i]));
+		map.push_back(miMatch(ZNCC(pts1i[i], pts2i[i], imag1, imag2), pts1i[i], pts2i[i]));
+	}
+
+	make_heap(seed.begin(), seed.end());
+	int T = 25000;
+	while (seed.size() != 0)
+	{
+		miMatch temp(seed.front().distance, seed.front().p1, seed.front().p2);
+		std::pop_heap(seed.begin(), seed.end());
+		seed.pop_back();
+		double t = 0.01;
+		if (temp.p1.x > 10 && temp.p1.x < imag1.cols - 10 && temp.p1.y > 10
+			&& temp.p1.y < imag1.rows && temp.p2.x > 10 && temp.p2.x < imag1.cols - 10
+			&& temp.p2.y > 10 && temp.p2.y < imag1.rows)
+		{
+			for (int i = -2; i < 3; ++i)
+			{
+				for (int j = -2; j < 3; ++j)
+				{
+					if (i != 0 && j != 0)
+					{
+						for (int k = i - 1 < -2 ? -2 : i - 1; k < i + 1 > 2 ? 2 : i + 1; ++k)
+						{
+							for (int l = j - 1 < -2 ? -2 : j - 1; l < j + 1 > 2 ? 2 : j + 1; ++l)
+							{
+								if (k != 0 && l != 0)
+								{
+									double x1 = temp.p1.x + i;
+									double y1 = temp.p1.y + j;
+									double x2 = temp.p2.x + k;
+									double y2 = temp.p2.y + l;
+									Point2f pt1 = Point2f(x1, y1);
+									Point2f pt2 = Point2f(x2, y2);
+									bool encontro = false;
+									for (vector < miMatch >::iterator it = map.begin(); it != map.end(); ++it)
+									{
+										if (pt1 == it->p1 || pt2 == it->p2)
+										{
+											encontro = true;
+										}
+									}
+									if (!encontro)
+									{
+										double d = ZNCC(pt1, pt2, imag1, imag2);
+										double a = s(pt1, imag1);
+										double b = s(pt2, imag2);
+										if (a > t && b > t && d > 0.5)
+										{
+											local.push_back(miMatch(d, pt1, pt2));
+										}
+									}
+
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		cout << "local.size(): " << local.size() << endl;
+		make_heap(local.begin(), local.end());
+		while (local.size() != 0)
+		{
+			miMatch temp(local.front().distance, local.front().p1, local.front().p2);
+			std::pop_heap(local.begin(), local.end());
+			local.pop_back();
+			bool encontro = false;
+			for (vector < miMatch >::iterator it = map.begin(); it != map.end(); ++it)
+			{
+				if (temp.p1 == it->p1 || temp.p2 == it->p2)
+				{
+					encontro = true;
+				}
+			}
+			if (!encontro)
+			{
+				seed.push_back(temp);
+				push_heap(seed.begin(), seed.end());
+				map.push_back(temp);
+			}
+		}
+		if (map.size()>T)
+		{
+			T = T + 25000;
+			images[0].copyTo(img1);
+			images[1].copyTo(img2);
+			for (int i = 0; i < map.size(); ++i)
+			{
+				Scalar color(rand() % 256, rand() % 256, rand() % 256);
+				circle(img1, map[i].p1, 10, color, 6);
+				circle(img2, map[i].p2, 10, color, 6);
+			}
+			cout << "map size: " << map.size() << endl;
+			img1.copyTo(out(rect1));
+			img2.copyTo(out(rect2));
+			namedWindow("rect", CV_WINDOW_KEEPRATIO);
+			imshow("rect", out);
+			waitKey(0);
+		}
+	}
+
+
+
+	cout << "map size: " << map.size() << endl;
+	imwrite("res.PNG", out);
 }
