@@ -8,8 +8,8 @@
 double ZNCC(cv::Point2f point1, cv::Point2f point2, cv::Mat gImg1, cv::Mat gImg2)
 {
 	cv::Mat result;
-	cv::Rect r1(point1.x - 1, point1.y - 1, 3, 3);
-	cv::Rect r2(point2.x - 1, point2.y - 1, 3, 3);
+	cv::Rect r1(point1.x - 1, point1.y - 1, 5, 5);
+	cv::Rect r2(point2.x - 1, point2.y - 1, 5, 5);
 	cv::matchTemplate(gImg1(r1), gImg2(r2), result, cv::TM_CCOEFF_NORMED);
 	return result.at<double>(0);
 }
@@ -39,28 +39,32 @@ bool compPoints(cv::Point2f a, cv::Point2f b)
 {
 	return (a.x < b.x || (a.x == b.x && a.y < b.y));
 }
+bool compPointsi(cv::Point2f a, cv::Point2f b)
+{
+	cv::Point2i ai = (cv::Point2i)a;
+	cv::Point2i bi = (cv::Point2i)b;
+	return (ai.x < bi.x || (ai.x == bi.x && ai.y < bi.y));
+}
 
-bool byPoint1(myMatch a, myMatch b)
+bool byPoint1(miMatch a, miMatch b)
 {
 	return (compPoints(a.point1, b.point1));
 }
+bool byPoint1i(miMatch a, miMatch b)
+{
+	return (compPointsi(a.point1, b.point1));
+}
 
-bool byPoint2(myMatch a, myMatch b)
+bool byPoint2(miMatch a, miMatch b)
 {
 	return (compPoints(a.point2, b.point2));
 }
+bool byPoint2i(miMatch a, miMatch b)
+{
+	return (compPointsi(a.point2, b.point2));
+}
 
-bool byQuality(myMatch a, myMatch b)
+bool byQuality(miMatch a, miMatch b)
 {
 	return (a.quality < b.quality);
-}
-
-bool compMatch1(myMatch a, myMatch b)
-{
-	return (a.point1.x < b.point1.x || (a.point1.x == b.point1.x && a.point1.y < b.point1.y));
-}
-
-bool compMatch2(myMatch a, myMatch b)
-{
-	return (a.point2.x < b.point2.x || (a.point2.x == b.point2.x && a.point2.y < b.point2.y));
 }

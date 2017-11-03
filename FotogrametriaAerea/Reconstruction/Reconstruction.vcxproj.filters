@@ -27,7 +27,7 @@
     <ClInclude Include="reconstructionUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Region.h">
+    <ClInclude Include="densificationUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -47,7 +47,7 @@
     <ClCompile Include="reconstructionUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Region.cpp">
+    <ClCompile Include="densificationUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

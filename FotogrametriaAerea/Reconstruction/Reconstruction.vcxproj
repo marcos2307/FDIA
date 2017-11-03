@@ -149,18 +149,18 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="densificationUtils.h" />
     <ClInclude Include="drawing.h" />
     <ClInclude Include="matchingUtils.h" />
     <ClInclude Include="reconstructionUtils.h" />
-    <ClInclude Include="Region.h" />
     <ClInclude Include="utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="densificationUtils.cpp" />
     <ClCompile Include="drawing.cpp" />
     <ClCompile Include="Reconstruction.cpp" />
     <ClCompile Include="matchingUtils.cpp" />
     <ClCompile Include="reconstructionUtils.cpp" />
-    <ClCompile Include="Region.cpp" />
     <ClCompile Include="utilities.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
