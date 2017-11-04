@@ -4,9 +4,9 @@ struct miMatch
 {
 	cv::Point2f point1;
 	cv::Point2f point2;
-	double quality;
+	float quality;
 
-	miMatch(cv::Point2f point1, cv::Point2f point2, double quality)
+	miMatch(cv::Point2f point1, cv::Point2f point2, float quality)
 	{
 		this->point1 = point1;
 		this->point2 = point2;
@@ -20,7 +20,7 @@ struct miMatch
 	}
 };
 
-double ZNCC(cv::Point2f, cv::Point2f, cv::Mat, cv::Mat);
+float ZNCC(cv::Point2f, cv::Point2f, std::vector<cv::Mat>);
 
 double s(cv::Point2f, cv::Mat);
 

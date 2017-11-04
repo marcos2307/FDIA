@@ -12,14 +12,13 @@
 #include "densificationUtils.h"
 
 #define LOWE_RATIO 0.8f //Razon de Lowe
-#define INF 2147483647  //Infinito
 
 using namespace std;
 using namespace cv;
 
 void match(vector<Mat> descriptors, vector<KeyPoint> keyPoints1, vector<KeyPoint> keyPoints2, vector<DMatch> &goodMatches, vector<Point2f> &srcPoints, vector<Point2f> &dstPoints);
 void detectComputeDescriptors(vector<Mat> grayImages, vector<vector<KeyPoint>> &keyPoints, vector<Mat> &descriptors, int treshold, int octaves, float patternScale);
-void densification(vector<miMatch> &seed, vector<miMatch> &map, vector<Mat> images, vector<Mat> grayImages);
+vector<miMatch> densification(vector<miMatch> &seed, vector<Mat> images, vector<Mat> grayImages);
 
 int main()
 {
@@ -59,6 +58,44 @@ int main()
 	//Conversion to Gray
 	color2Gray(images, grayImages);
 
+	//cout << grayImages[0].cols << ", " << grayImages[0].rows << endl;
+	//cout << grayImages[1].cols << ", " << grayImages[1].rows << endl;
+
+
+	//vector<miMatch> mapP1;
+
+	//cout << "crear map\n";
+	//for (int i = 0; i < 10; i++)
+	//{
+	//	cout << i << endl;
+	//	Point2f p1(4.4 + i, 6.4 + i);
+	//	Point2f p2(4.3 + i, 6.8 + i);
+
+	//	miMatch temp(p1, p2, ZNCC(p1, p2, grayImages));
+
+	//	mapP1.push_back(temp);
+	//}
+	//cout << "fin map\n";
+	//make_heap(mapP1.begin(), mapP1.end(), byPoint1);
+
+	//Point2f p1(4.4, 6.4);
+	//Point2f p2(4.3, 6.8);
+
+	//miMatch newCandidate(p1, p2, ZNCC(p1, p2, grayImages));
+
+	//if (!binary_search(mapP1.begin(), mapP1.end(), newCandidate, byPoint1i))
+	//{
+	//	//Si no existe almacenar en local
+	//	cout << "NO HAY";
+	//}
+	//else
+	//{
+	//	cout << "HAY";
+	//}
+
+
+
+
 	detectComputeDescriptors(grayImages, keyPoints, descriptors, treshold, octaves, patternScale);
 
 	//Matching and filtering
@@ -77,15 +114,34 @@ int main()
 	Mat E = findEssentialMat(srcPoints, dstPoints, K, RANSAC, confidence, reprojError, mask);
 	cout << "Essential Matrix Ready\n";
 
-	densification();
+	
 
 	vector<Vec3b> colors1, colors2;
 	vector<Point2f> inliers1, inliers2;
 	//Get inliers
 	cout << "\nGetting inliers...\n";
 	getInliers(srcPoints, dstPoints, mask, inliers1, inliers2);
-	cout << "Inliers Ready\nGetting Inliers' colors...\n";
+
+	vector<miMatch> seed;
+
+	for (int i = 0; i < inliers1.size(); i++)
+	{
+		miMatch temp(inliers1[i], inliers2[i],ZNCC(inliers1[i], inliers2[i],grayImages));
+		seed.push_back(temp);
+	}
+
+	/*vector<miMatch> map = densification(seed, images, grayImages);
+
+	inliers1.clear();
+	inliers2.clear();
+
+	for (int i = 0; i < map.size(); i++)
+	{
+		inliers1.push_back(map[i].point1);
+		inliers2.push_back(map[i].point2);
+	}*/
 	
+	cout << "Inliers Ready\nGetting Inliers' colors...\n";
 	//Get inliers' colors
 	getColors(images.at(0), images.at(1), inliers1, inliers2, colors1, colors2);
 
@@ -101,9 +157,9 @@ int main()
 
 	//Mat F = findFundamentalMat(inliers1, inliers2);
 
-	cv::FileStorage file("C:\\Users\\stn\\Desktop\\camParam\\inliers.XML", cv::FileStorage::WRITE, cv::String());
+	/*cv::FileStorage file("C:\\Users\\stn\\Desktop\\camParam\\inliers.XML", cv::FileStorage::WRITE, cv::String());
 	file.write("in1", inliers1);
-	file.write("in2", inliers2);
+	file.write("in2", inliers2);*/
 	//file.write("F", F);
 
 	Mat pts4D;
@@ -117,7 +173,7 @@ int main()
 
 	//cout << pts3D << endl;
 	cout << "Creating PLY file.." << endl;
-	generatePLY("C:\\Users\\stn\\Desktop\\nube.ply", pts3D, colors1);
+	generatePLY("C:\\Users\\stn\\Desktop\\nube", pts3D, colors1);
 
 	return 0;
 }
@@ -130,8 +186,6 @@ void match(vector<Mat> descriptors, vector<KeyPoint> keyPoints1, vector<KeyPoint
 	cout << "\nMatching keypoints...\n";
 	matcher.knnMatch(descriptors.at(0), descriptors.at(1), matches, 2);
 	cout << "Matches found: " << matches.size() << "\n";
-
-	vector<DMatch> matches1, matches2;
 
 	goodMatches = loweCriteria(matches, LOWE_RATIO);
 
@@ -160,48 +214,149 @@ void detectComputeDescriptors(vector<Mat> grayImages, vector<vector<KeyPoint>> &
 	cout << "Finished descriptors computation\n";
 }
 
-double s(Point2f x, Mat M)
+vector<miMatch> densification(vector<miMatch> &seed, vector<Mat> images, vector<Mat> grayImages)
 {
-	Point2f up(x), down(x), left(x), right(x);
-	up.y++;
-	down.y--;
-	left.x--;
-	right.x++;
-	double d[4] = { 0 };
+	//Parametros del algoritmo
+	double t = 0.01;
+	double minCorr = 0.5;
+	double numberOfMatches = 5000;
 
-	d[0] = abs(M.at<char>(up) - M.at<char>(x)) / (double)255;
-	d[1] = abs(M.at<char>(down) - M.at<char>(x)) / (double)255;
-	d[2] = abs(M.at<char>(left) - M.at<char>(x)) / (double)255;
-	d[3] = abs(M.at<char>(right) - M.at<char>(x)) / (double)255;
-	double max = 0;
-	for (int i = 0; i < 4; ++i)
-	{
-		max = d[i] > max ? d[i] : max;
-	}
-	return max;
-}
-
-double ZNCC(Point2f p1, Point2f p2, Mat gray1, Mat gray2)
-{
-	Mat res;
-	Rect r1(p1.x - 1, p1.y - 1, 5, 5);
-	Rect r2(p2.x - 1, p2.y - 1, 5, 5);
-	matchTemplate(gray1(r1), gray2(r2), res, TM_CCOEFF_NORMED);
-	return res.at<float>(0);
-}
-
-void densification(vector<miMatch> &seed, vector<miMatch> &map, vector<Mat> images, vector<Mat> grayImages)
-{
 	//Datos de entrada para el algoritmo
 	vector<miMatch> mapP1 = seed;
 	vector<miMatch> mapP2 = seed;
+	vector<miMatch> allMatches = seed;
 	make_heap(seed.begin(), seed.end(), byQuality);
 	make_heap(mapP1.begin(), mapP1.end(), byPoint1);
 	make_heap(mapP2.begin(), mapP2.end(), byPoint2);
 
+	//Para graficar
+	Mat result1, result2, result;
+	int lastIndex = 0;
+	images[0].copyTo(result1);
+	images[1].copyTo(result2);
+
 	while (seed.size() > 0)
 	{
-		pop_heap(seed.begin(), seed.end());
+		//Tomar el mejor match
+		miMatch temp(seed.front().point1, seed.front().point2, seed.front().quality);
+		std::pop_heap(seed.begin(), seed.end(), byQuality);
+		seed.pop_back();
 
+		//Crear local para almacenar candidatos a Match
+		vector<miMatch> local;
+
+		//Buscar candidatos a match en el vecindario de la semilla
+		//Buscar punto en la primera imagen
+		//columnas
+		for (int i = -2; i < 3; i++)
+		{
+			//filas
+			for (int j = -2; j < 3; j++)
+			{
+				//Si no es el punto semilla
+				if (i != 0 || j != 0)
+				{
+					//Buscar el match en la segunda imagen
+					//columnas
+					for (int k = (i > -2 ? -1 : 0); k < (i < 2 ? 2 : 1); k++)
+					{
+						//filas
+						for (int l = (i > -2 ? -1 : 0); l < (i < 2 ? 2 : 1); l++)
+						{
+							//Si no es el match semilla
+							if (k != 0 || l != 0)
+							{
+								Point2f point1(temp.point1.x + i, temp.point2.y + j);
+								Point2f point2(temp.point2.x + i + k, temp.point2.y + j + l);
+
+								//Verificar limites de imagen
+								if (point1.x<0 || point1.x>grayImages[0].cols || point1.y<0 || point1.y>grayImages[0].rows ||
+									point2.x<0 || point2.x>grayImages[1].cols || point2.y<0 || point2.y>grayImages[1].rows)
+								{
+									continue;
+								}
+								
+								//Verificar textura
+								if (s(point1, grayImages[0]) > t && s(point2, grayImages[1]) > t)
+								{
+									float quality = ZNCC(point1, point2, grayImages);
+									//Verificar correlacion minima
+									if (quality > minCorr)
+									{
+										//Crear el candidato a match
+										miMatch newCandidate(point1, point2, quality);
+										//Buscar si alguno de los puntos ya existe en Map
+										if (!binary_search(mapP1.begin(), mapP1.end(), newCandidate, byPoint1i) && !binary_search(mapP2.begin(), mapP2.end(), newCandidate, byPoint2i))
+										{
+											//Si no existe almacenar en local
+											local.push_back(newCandidate);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		//Ordenar local segun la calidad de los matches
+		make_heap(local.begin(), local.end(), byQuality);
+		//cout << "bestCandidates:\n";
+		while (local.size() > 0)
+		{
+			miMatch bestCandidate(local.front().point1, local.front().point2, local.front().quality);
+			std::pop_heap(local.begin(), local.end(), byQuality);
+			local.pop_back();
+
+			//buscar si el candidato ya existe en map
+			if (!binary_search(mapP1.begin(), mapP1.end(), bestCandidate, byPoint1i) && !binary_search(mapP2.begin(), mapP2.end(), bestCandidate, byPoint2i))
+			{
+				//bestCandidate.print();
+				//Si no existe almacenar en seed y map
+				seed.push_back(bestCandidate);
+				mapP1.push_back(bestCandidate);
+				mapP2.push_back(bestCandidate);
+
+				//Para graficar
+				allMatches.push_back(bestCandidate);
+
+				//Reordenar map y seed
+				make_heap(seed.begin(), seed.end(), byQuality);
+				make_heap(mapP1.begin(), mapP1.end(), byPoint1);
+				make_heap(mapP2.begin(), mapP2.end(), byPoint2);
+			}
+		}
+		if (allMatches.size() >= numberOfMatches)
+		{
+			numberOfMatches *= 2;
+			cout << "Matches: " << allMatches.size() << endl;
+
+			for (lastIndex; lastIndex < allMatches.size(); lastIndex++)
+			{
+				Scalar color = Scalar(rand() % 256, rand() % 256, rand() % 256);
+				circle(result1, allMatches[lastIndex].point1, 40, color, -1);
+				circle(result2, allMatches[lastIndex].point2, 40, color, -1);
+			}
+			hconcat(result1, result2, result);
+
+			namedWindow("result", WINDOW_FREERATIO);
+			imshow("result", result);
+
+			if (waitKey(10000) == 'f')
+			{
+				destroyAllWindows();
+				break;
+			}
+			else
+			{
+				destroyAllWindows();
+			}
+		}
 	}
+	namedWindow("result", WINDOW_FREERATIO);
+	imshow("result", result);
+	waitKey(0);
+	destroyAllWindows();
+	vector<miMatch> map = mapP1;
+	return map;
 }

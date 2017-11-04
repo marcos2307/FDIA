@@ -5,13 +5,13 @@
 #include <fstream>
 #include "densificationUtils.h"
 
-double ZNCC(cv::Point2f point1, cv::Point2f point2, cv::Mat gImg1, cv::Mat gImg2)
+float ZNCC(cv::Point2f point1, cv::Point2f point2, std::vector<cv::Mat> grayImages)
 {
-	cv::Mat result;
-	cv::Rect r1(point1.x - 1, point1.y - 1, 5, 5);
-	cv::Rect r2(point2.x - 1, point2.y - 1, 5, 5);
-	cv::matchTemplate(gImg1(r1), gImg2(r2), result, cv::TM_CCOEFF_NORMED);
-	return result.at<double>(0);
+	cv::Mat result(1,1,CV_32F);
+	cv::Rect r1(point1.x - 2, point1.y - 2, 5, 5);
+	cv::Rect r2(point2.x - 2, point2.y - 2, 5, 5);
+	cv::matchTemplate(grayImages[0](r1), grayImages[1](r2), result, cv::TM_CCOEFF_NORMED);
+	return result.at<float>(0,0);
 }
 
 double s(cv::Point2f x, cv::Mat M)
