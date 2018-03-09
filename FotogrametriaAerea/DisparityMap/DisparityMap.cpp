@@ -100,17 +100,53 @@ void matchTwoViews(vector <Mat> images, vector <Mat> grayImages, String camFolde
 	//warpPerspective(im2ep, imag2, H2, imgSize);
 	warpPerspective(img2, imag2, H2, imgSize);
 
-	for (int i = 10; i < imag1.rows; i = i + 60)
-	{
-		line(imag1, Point(0, i), Point(imag1.cols - 1, i), Scalar(0, 0, 255), 3);
-		line(imag2, Point(0, i), Point(imag1.cols - 1, i), Scalar(0, 0, 255), 3);
-	}
-
 	Mat out(imag1.rows, 2 * imag1.cols, CV_8UC3);
 	Rect rect1 = Rect(0, 0, imag1.cols, imag1.rows);
 	Rect rect2 = Rect(imag1.cols, 0, imag1.cols, imag1.rows);
 	imag1.copyTo(out(rect1));
 	imag2.copyTo(out(rect2));
+
+	int rango = 100; // distancia maxima (en x) en pixeles entre imag1(i,j) imag2(i, j + d)...
+	int wz = 9;
+
+	Rect w1, w2;
+	double n1, n2, distancia;
+	int DD = 0.9;
+	int im2x;
+	vector <Point2i> points1, points2;
+	for (int i = imag1.rows / 10; i < imag1.rows * 9 / 10; i = i+10) 
+	{
+		double distAnt = DD;
+		for (int j = imag1.cols / 10; j < imag1.cols * 9 / 10; j = j+10)
+		{
+			w1 = Rect(j - wz, i - wz, 2 * wz + 1, 2 * wz + 1);
+			for (int k = -rango ; k<=rango ; ++k)
+			{
+				w2 = Rect(j - wz + k, i - wz, 2 * wz + 1, 2 * wz + 1);
+				n1 = sqrt(imag1(w1).dot(imag1(w1)));
+				n2 = sqrt(imag2(w2).dot(imag2(w2)));
+				distancia = imag1(w1).dot(imag2(w2))/ (n1*n2);
+				if (distancia > distAnt)
+				{
+					distAnt = distancia;
+					cout << distancia << endl;
+					im2x = j - wz + k;
+				}
+
+			}
+			if (distAnt > 0.9999)
+			{
+				points1.push_back(Point2i(j, i));
+				points2.push_back(Point2i(im2x, i));
+				Scalar color1(rand() % 256, rand() % 256, rand() % 256);
+				circle(out(rect1), Point2i(j, i), POINT_SIZE, color1, -1, CV_AA);
+				circle(out(rect2), Point2i(im2x, i), POINT_SIZE, color1, -1, CV_AA);
+			}
+		}
+	}
+
+
+	
 	resize(out, out, Size(2000, 500));
 	imwrite("rect.JPEG", out);
 	namedWindow("rect", CV_WINDOW_KEEPRATIO);

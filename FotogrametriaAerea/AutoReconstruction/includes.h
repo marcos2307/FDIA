@@ -58,7 +58,6 @@ public:
 	{
 		this->w = w;
 		this->h = h;
-		cout << "entro" << endl;
 		this->points[0] = (Point3d(0, 0, 0));
 		this->points[1] = (Point3d(w / 2, h / 2, 2*w));
 		this->points[2] = (Point3d(w / 2, -h / 2, 2*w));
@@ -88,15 +87,12 @@ public:
 		tCam = tCam + t;
 		Mat Temp = Mat::Mat(Size(1, 3), CV_64FC1);
 		Temp = Mat(points, CV_64FC1).reshape(1);
-		cout <<"Temp: "<< Temp << endl;
-		cout << "Temp.Type: " << Temp.type() << " R: " << R.type() << endl;
 		Temp =  (R*Temp.t()).t();
 		for (int i = 0; i < 5; ++i)
 		{
 			Temp.row(i) = Temp.row(i) + t.t();
 			cout << Temp.row(i) << endl;
 		}
-		cout << "R*Temp: " << Temp << endl;
 		Temp.reshape(3).clone().copyTo(points);
 	}
 };

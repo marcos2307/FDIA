@@ -39,7 +39,6 @@ int main(int argc, const char** argv)
 }
 void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, vector < ImageInfo > info)
 {
-	cout << info[0].name << endl;
 	cout << "Detecting and computing keypoints using BRISK.." << endl;
 	Mat img1 = images[0];
 	Mat img2 = images[1];
@@ -71,13 +70,17 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 			pts1.push_back(kp.at(0)[matches[i][0].queryIdx].pt); //bf.match(query, train)
 		}
 	}
+
+
+	graficarMatches(img1, img2, pts1, pts2);
+
 	cout << endl << good1.size() << endl;
 
 	Mat F;
 	vector <uchar> inlier;
 	vector< Point2f > pts1i, pts2i;
 	vector< Vec3b > color1, color2;
-
+	
 
 	FileStorage f(camFile, cv::FileStorage::READ, cv::String());
 	Mat K, dist;
@@ -101,6 +104,7 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 		}
 	}
 
+	graficarMatches(img1, img2, pts1i, pts2i);
 
 	Mat P1, P2;
 	Mat R1 = Mat::eye(Size(3,3), CV_64FC1);
@@ -117,18 +121,20 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 	cout << "t1: " << t1 << endl << "P1: " << P1 << endl;
 	C1.rotoTrans(R1, t1);
 	
-	Mat R, t;
-	recoverPose(E, pts1i, pts2i, K, R, t);
-	cout << "R*R1 t de la matriz Esencial:" << endl << R*R1 << t << endl;
-	cout << "R del GPS" << ypr2rm(info[1]) << ", " << endl;
-	double S = info[0].distanceInMeters(info[1]);
+	Mat R, tr;
+	recoverPose(E, pts1i, pts2i, K, R, tr);
+	cout << "R*R1 t de la matriz Esencial:" << endl << R*R1 << tr << endl;
+	cout << "R del GPS" << ypr2rm(info[1]) * Rz << ", " << endl;
+	double dh = abs(info[1].height - info[0].height);
+	Mat t = -(R1*tr); //tr es relativa a C1 por lo que debe transformarse a las coordenadas de tierra
+	double S = 30; // dh / t.at<double>(2);
 	cout << "lat1, lon1: " << info[0].latitude << ", " << info[0].longitude << endl;
 	cout << "lat2, lon2: " << info[1].latitude << ", " << info[1].longitude << endl;
 	cout << "distancia en metros entre camaras(escala): " << S << endl;
 	Mat I1 = C1.getR().clone();
 	Mat I2 = C1.getT().clone();
 	Camera C2(I1, I2);
-	cout << " posicion de C2: " << C2.getT()<< " y R: " << C2.getR() << endl;
+	cout << " posicion de C2: " << C2.getT()<< endl << " y R: " << C2.getR() << endl;
 	cout << "t: " << t << endl << "S*t: " << S*t << endl;
 	C2.rotoTrans(R, S*t);
 	cout << "C1: (R t)" << endl << C1.getR() << endl << C1.getT() << endl;
@@ -137,7 +143,6 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 	cam.push_back(C1);
 	cam.push_back(C2);
 	cout << "camara1con rototranslacion:" << Mat(C1.getPoints()) << endl;
-	cout << P1 << endl;
 	hconcat(C2.getR(), C2.getT(), P2);
 	//Mat R1, R2, Q;
 	//stereoRectify(K, dist, K, dist, images[0].size(), R, t, R1, R2, P1, P2, Q);
@@ -151,7 +156,6 @@ void reconstruct(vector <Mat> images, vector <Mat> grayImages, String camFile, v
 	convertPointsFromHomogeneous(pts4D, pts3D);
 
 	cout << "Creating PLY file.." << endl;
-	generatePLYcameras("camerasConEscala", cam,pts3D, color1);
-
+	generatePLY("Nube", pts3D, color1);
 	//prueba
 }

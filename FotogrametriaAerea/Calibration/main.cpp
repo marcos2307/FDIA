@@ -33,7 +33,7 @@ int main(int argc, const char** argv)
 	{
 		for (int i = 0; i < M; ++i)
 		{
-			objp.push_back(cv::Vec3f((float)i, (float)j, 0));
+			objp.push_back(cv::Vec3f((float)i*2.58, (float)j*2.58, 0));
 		}
 	}
 	//halla los corners

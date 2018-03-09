@@ -124,14 +124,7 @@ void generatePLY(String name, Mat pts3D, vector< Vec3b > color)
 	for (int i = 0; i < pts3D.rows; ++i)
 	{
 		const float* Mi = pts3D.ptr<float>(i);
-		if (Mi[0] * Mi[0] + Mi[1] * Mi[1] + Mi[2] * Mi[2] < 2000)
-		{
-			f << Mi[0] << " " << Mi[1] << " " << Mi[2] << " " << (int)color[i][0] << " " << (int)color[i][1] << " " << (int)color[i][2] << endl;
-		}
-		else
-		{
-			f << 0 << " " << 0 << " " << 0 << " " << (int)color[i][0] << " " << (int)color[i][1] << " " << (int)color[i][2] << endl;
-		}
+		f << Mi[0] << " " << Mi[1] << " " << Mi[2] << " " << (int)color[i][0] << " " << (int)color[i][1] << " " << (int)color[i][2] << endl;
 	}
 
 	f.close();
